@@ -1,30 +1,49 @@
-// middleware/auth.js
 import jwt from "jsonwebtoken";
-const JWT_SECRET = process.env.JWT_SECRET || "change_this_in_env";
+import User from "../models/UserModel.js";
 
-// require token and attach req.user = { id, role }
-export const requireAuth = (req, res, next) => {
-  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // "Bearer <token>"
+const JWT_SECRET = process.env.JWT_SECRET;
 
-  if (!token) return res.status(401).json({ msg: "No token, authorization denied" });
-
+// Authentication middleware
+export const authenticate = async (req, res, next) => {
   try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. No token provided."
+      });
+    }
+
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { id, role }
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Token is not valid."
+      });
+    }
+
+    req.user = user;
     next();
-  } catch (err) {
-    return res.status(401).json({ msg: "Token invalid or expired" });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "Token is not valid."
+    });
   }
 };
 
-// roles can be string or array; usage: requireRole("hospital") or requireRole(["admin","hospital"])
-export const requireRole = (roles) => (req, res, next) => {
-  if (!req.user) return res.status(401).json({ msg: "Not authenticated" });
-
-  const allowed = Array.isArray(roles) ? roles : [roles];
-  if (!allowed.includes(req.user.role)) {
-    return res.status(403).json({ msg: "Access denied: insufficient role" });
-  }
-  next();
+// Role authorization middleware
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Insufficient permissions."
+      });
+    }
+    next();
+  };
 };

@@ -1,30 +1,37 @@
 import express from "express";
 import mongoose from "mongoose";
+import authentication_routes from "./routes/authentication.js";
+import hospital_routes from "./routes/hospital.js";
+import campRoutes from "./routes/campRoutes.js";
+
+// Load environment variables
 import dotenv from "dotenv";
-import authRoutes from "./routes/auth.js";
-import userRoutes from "./routes/userRoutes.js";
-import hospitalRoutes from "./routes/hospitalRoutes.js";
-
 dotenv.config();
-const app = express();
 
+// load express app
+const app = express();
 app.use(express.json());
 
-// routes
-app.use("/api/auth", authRoutes);
+// authentication routes like login, register
+app.use("/api/auth", authentication_routes);
 
-app.use("/api/donor", userRoutes);
+// Hospital routes
+app.use("/api", hospital_routes);
+
+// Camp routes
+app.use("/api/camps", campRoutes);
 
 
-app.use("/api/hospital", hospitalRoutes);
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ error: 'Something went wrong!' });
+});
 
 
 
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected");
-    app.listen(5000, () => console.log("Server running on port 5000"));
-  })
-  .catch((err) => console.log(err));
+// Connect to MongoDB and start the server
+mongoose.connect(process.env.MONGO_URI).then(() => {
+  console.log("MongoDB Connected");
+  app.listen(5000, () => console.log("Server running on port 5000"));
+}).catch((err) => console.log(err));
