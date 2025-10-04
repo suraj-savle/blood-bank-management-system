@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/Signin";
 import Profile from "./pages/Profile";
-import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import Register from "./pages/auth/Signup";
 import LandingPage from "./pages/Landing";
+import FacilityForm from "./pages/auth/FacultyRegister";
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
         <Route path="/createaccount" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* <Route path="/profile" element={<Profile />} /> */}
-        <Route path="/hospital" element={<HospitalDashboard />} />
+        <Route path="/facilities/registration" element={<FacilityForm />} />
         <Route path="/user" element={<UserDashboard />} />
         <Route path="/" element={<LandingPage />} />
         {/* <Route path="*" element={<Navigate to="/createaccount" />} /> */}

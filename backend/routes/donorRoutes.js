@@ -1,81 +1,81 @@
 import express from "express";
-import HospitalCamp from "../models/HospitalCampModel.js";
-import User from "../models/UserModel.js";
-import { authenticate, authorize } from "../middleware/auth.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import Donor from "../models/donorModel.js";
 
 const router = express.Router();
 
-// GET all upcoming or ongoing camps
-router.get("/camps", async (req, res) => {
-  try {
-    const camps = await HospitalCamp.find({
-      status: { $in: ["upcoming", "ongoing"] }
-    }).populate("hospital", "name email address phone");
+// 🧠 JWT Helper
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
 
-    res.json({ success: true, camps });
+// 🩸 REGISTER Donor
+router.post("/register", async (req, res) => {
+  try {
+    const { fullName, email, password, phone, address, bloodGroup, age, gender, weight } = req.body;
+
+    // Check if donor already exists
+    const existingDonor = await Donor.findOne({ email });
+    if (existingDonor) return res.status(400).json({ message: "Email already registered" });
+
+    // Create new donor
+    const donor = await Donor.create({
+      fullName,
+      email,
+      password,
+      phone,
+      address,
+      bloodGroup,
+      age,
+      gender,
+      weight,
+    });
+
+    res.status(201).json({
+      message: "Registration successful",
+      donor: {
+        id: donor._id,
+        fullName: donor.fullName,
+        email: donor.email,
+        bloodGroup: donor.bloodGroup,
+      },
+      token: generateToken(donor._id),
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Donor registers for a camp
-router.post("/camps/:id/register", authenticate, authorize("donor"), async (req, res) => {
+// 🔐 LOGIN Donor
+router.post("/login", async (req, res) => {
   try {
-    const camp = await HospitalCamp.findById(req.params.id);
-    if (!camp) {
-      return res.status(404).json({ success: false, message: "Camp not found" });
-    }
+    const { email, password } = req.body;
 
-    if (!["upcoming", "ongoing"].includes(camp.status)) {
-      return res.status(400).json({ success: false, message: "Camp is not open for registration" });
-    }
+    // Find donor by email
+    const donor = await Donor.findOne({ email }).select("+password");
+    if (!donor) return res.status(400).json({ message: "Invalid email or password" });
 
-    const donor = await User.findById(req.user._id);
+    // Compare password
+    const isMatch = await bcrypt.compare(password, donor.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    // ✅ Eligibility checks
-    const age = Math.floor((Date.now() - new Date(donor.healthInfo?.dob)) / (365.25 * 24 * 60 * 60 * 1000));
-    if (age < 18) {
-      return res.status(400).json({ success: false, message: "Donor must be 18 or older" });
-    }
+    // Update last login
+    donor.lastLogin = new Date();
+    await donor.save();
 
-    if (donor.healthInfo?.hasDiseases) {
-      return res.status(400).json({ success: false, message: "Donor is not eligible due to health conditions" });
-    }
-
-    if (donor.lastDonationDate) {
-      const diffDays = Math.floor((Date.now() - new Date(donor.lastDonationDate)) / (1000 * 60 * 60 * 24));
-      if (diffDays < 45) {
-        return res.status(400).json({ success: false, message: "Minimum 45 days required between donations" });
-      }
-    }
-
-    // Check if already registered
-    const alreadyRegistered = camp.registeredDonors.some(d => d.donor.toString() === donor._id.toString());
-    if (alreadyRegistered) {
-      return res.status(400).json({ success: false, message: "Already registered for this camp" });
-    }
-
-    // Add donor
-    camp.registeredDonors.push({ donor: donor._id });
-    await camp.save();
-
-    res.status(201).json({ success: true, message: "Donor registered successfully", camp });
+    res.status(200).json({
+      message: "Login successful",
+      donor: {
+        id: donor._id,
+        fullName: donor.fullName,
+        email: donor.email,
+        bloodGroup: donor.bloodGroup,
+      },
+      token: generateToken(donor._id),
+    });
   } catch (error) {
-    console.error("Donor register error:", error);
-    res.status(500).json({ success: false, message: "Server error while registering donor" });
-  }
-});
-
-// GET donor's registered camps
-router.get("/donor/camps", authenticate, authorize("donor"), async (req, res) => {
-  try {
-    const camps = await HospitalCamp.find({
-      "registeredDonors.donor": req.user._id
-    }).populate("hospital", "name address");
-
-    res.json({ success: true, camps });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
