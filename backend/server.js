@@ -2,21 +2,40 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import authRoutes from "./routes/authRoutes.js";
 import donorRoutes from "./routes/donorRoutes.js";
-import facilityRoutes from "./routes/facilityRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import facilityRoutes from "./routes/facilityRoutes.js";
+
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173", // or 3000
+  credentials: true,
+}));
+
 
 // 🧩 Routes
+
+app.use("/api/auth", authRoutes);
+
+
 app.use("/api/donor", donorRoutes);
+
 app.use("/api/facility", facilityRoutes);
 
 app.use("/api/admin", adminRoutes);
+
+
+
+import bloodLabRoutes from "./routes/bloodLabRoutes.js";
+app.use("/api/blood-lab", bloodLabRoutes);
+
+
 
 
 

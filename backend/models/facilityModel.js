@@ -4,23 +4,23 @@ import bcrypt from "bcryptjs";
 const facilitySchema = new mongoose.Schema(
   {
     // 🏥 Basic Info
-    name: { 
-      type: String, 
-      required: [true, "Facility name is required"], 
+    name: {
+      type: String,
+      required: [true, "Facility name is required"],
       trim: true,
       maxlength: [200, "Name cannot exceed 200 characters"]
     },
-    email: { 
-      type: String, 
-      required: [true, "Email is required"], 
-      unique: true, 
-      lowercase: true, 
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
       trim: true,
       match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, "Please enter a valid email"]
     },
-    password: { 
-      type: String, 
-      required: [true, "Password is required"], 
+    password: {
+      type: String,
+      required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
       select: false
     },
@@ -40,29 +40,33 @@ const facilitySchema = new mongoose.Schema(
       street: { type: String, required: [true, "Street address is required"] },
       city: { type: String, required: [true, "City is required"] },
       state: { type: String, required: [true, "State is required"] },
-      pincode: { 
-        type: String, 
+      pincode: {
+        type: String,
         required: [true, "Pincode is required"],
         match: [/^[1-9][0-9]{5}$/, "Please enter a valid 6-digit pincode"]
       }
     },
 
     // 🧾 Facility Details
-    registrationNumber: { 
-      type: String, 
+    registrationNumber: {
+      type: String,
       required: [true, "Registration number is required"],
       unique: true,
       uppercase: true,
       trim: true
     },
-    facilityType: { 
-      type: String, 
-      enum: ["Hospital", "Blood Lab"], 
+    facilityType: {
+      type: String,
+      enum: ["hospital", "blood-lab"],
       required: [true, "Facility type is required"]
     },
-    facilityCategory: { 
-      type: String, 
-      enum: ["Government", "Private", "Trust", "Charity", "Other"], 
+    role: {
+      type: String,
+      enum: ["hospital", "blood-lab"],
+    },
+    facilityCategory: {
+      type: String,
+      enum: ["Government", "Private", "Trust", "Charity", "Other"],
       default: "Private"
     },
 
@@ -74,8 +78,8 @@ const facilitySchema = new mongoose.Schema(
         uploadedAt: { type: Date, default: Date.now }
       }
     },
-    status: { 
-      type: String, 
+    status: {
+      type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending"
     },
@@ -97,17 +101,29 @@ const facilitySchema = new mongoose.Schema(
     emergencyServices: { type: Boolean, default: false },
 
     // 📜 History for Admin Dashboard
-    history: [
-      {
-        eventType: {
-          type: String,
-          enum: ["Registration", "Verification", "Blood Camp", "Login"],
-          required: true
+
+    history: {
+      type: [
+        {
+          eventType: {
+            type: String,
+            enum: [
+              "Login",
+              "Verification",
+              "Stock Update",
+              "Blood Camp",
+              "Request Approved",
+              "Profile Update",
+              "Donation",
+            ],
+          },
+          description: String,
+          date: { type: Date, default: Date.now },
         },
-        description: { type: String },
-        date: { type: Date, default: Date.now },
-      }
-    ],
+      ],
+      default: [], // ✅ ensures history is always initialized
+    },
+
 
     // 🔐 Security & Access
     lastLogin: Date,
@@ -117,6 +133,14 @@ const facilitySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// 🧩 Auto-assign role from facilityType
+facilitySchema.pre("save", function (next) {
+  if (this.facilityType) {
+    this.role = this.facilityType;
+  }
+  next();
+});
 
 //
 // 🔐 Hash password before save

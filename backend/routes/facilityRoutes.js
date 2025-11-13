@@ -1,20 +1,33 @@
 import express from "express";
 import {
-  registerFacility,
-  loginFacility,
+  getFacilityDashboard,
   getProfile,
   updateProfile,
 } from "../controllers/facilityController.js";
-import { protectFacility } from "../middleware/facilityMiddleware.js";
+import { protectFacility } from "../middlewares/facilityMiddleware.js";
+
 
 const router = express.Router();
 
-// Public routes
-router.post("/register", registerFacility);
-router.post("/login", loginFacility);
+/**
+ * @route   GET /api/facility/dashboard
+ * @desc    Get facility dashboard stats
+ * @access  Private (facility only)
+ */
+router.get("/dashboard", protectFacility, getFacilityDashboard);
 
-// Protected routes (only approved facilities)
+/**
+ * @route   GET /api/facility/profile
+ * @desc    Get facility profile details
+ * @access  Private
+ */
 router.get("/profile", protectFacility, getProfile);
+
+/**
+ * @route   PUT /api/facility/profile
+ * @desc    Update facility profile
+ * @access  Private
+ */
 router.put("/profile", protectFacility, updateProfile);
 
 export default router;

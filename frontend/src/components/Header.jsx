@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+const WEBSITE_NAME = import.meta.env.VITE_WEBSITE_NAME;
 
 export default function Header({ onRoleChange, currentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function Header({ onRoleChange, currentUser }) {
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-800">BloodBank</h1>
+                <h1 className="text-lg font-semibold text-gray-800">{WEBSITE_NAME}</h1>
                 <p className="text-xs text-gray-500 -mt-0.5">Management System</p>
               </div>
             </a>
@@ -78,7 +79,6 @@ export default function Header({ onRoleChange, currentUser }) {
                 <option>Donor</option>
                 <option>Hospital</option>
                 <option>Admin</option>
-                <option>Clerk</option>
               </select>
             </div>
           </div>
@@ -105,28 +105,6 @@ export default function Header({ onRoleChange, currentUser }) {
               New Request
             </button>
 
-            <button
-              type="button"
-              className="p-2 rounded-md hover:bg-gray-100 focus:outline-none transition-colors"
-              aria-label="Notifications"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
-              </svg>
-            </button>
-
-            {/* user avatar */}
-            <div className="relative">
-              <button className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 focus:outline-none transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm text-gray-700">
-                  {currentUser ? currentUser.initials : "GU"}
-                </div>
-                <span className="hidden sm:inline-block text-sm text-gray-700">
-                  {currentUser ? currentUser.name : "Guest"}
-                </span>
-              </button>
-            </div>
-
             {/* mobile menu button */}
             <div className="md:hidden">
               <button
@@ -148,18 +126,9 @@ export default function Header({ onRoleChange, currentUser }) {
 
         {/* mobile dropdown */}
         {mobileOpen && (
-          <nav className="md:hidden mt-2 pb-4 border-t">
+          <nav className="md:hidden text-black mt-2 pb-4 border-t">
             <div className="px-2 space-y-1">
-              <select
-                value={role}
-                onChange={handleRoleChange}
-                className="w-full border rounded-md px-2 py-2 text-sm mb-2"
-              >
-                <option>Donor</option>
-                <option>Hospital</option>
-                <option>Admin</option>
-                <option>Clerk</option>
-              </select>
+              
 
               {navLinks.map((link) => (
                 <a

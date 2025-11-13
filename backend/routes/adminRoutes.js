@@ -1,20 +1,20 @@
 import express from "express";
+import { protect } from "../middlewares/authMiddleware.js";
 import {
-  loginAdmin,
+  getAllFacilities,
   approveFacility,
   rejectFacility,
-  listPendingFacilities,
+  getDashboardStats,
+  getAllDonors,
 } from "../controllers/adminController.js";
-import { protectAdmin } from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
-// 🔓 Public Route
-router.post("/login", loginAdmin);
+router.get("/facilities", protect, getAllFacilities);
+router.put("/facility/approve/:id",protect,  approveFacility);
+router.put("/facility/reject/:id", protect, rejectFacility);
+router.get("/dashboard", protect, getDashboardStats);
+router.get("/donors", getAllDonors);
 
-// 🔐 Protected Routes
-router.get("/pending-facilities", protectAdmin, listPendingFacilities);
-router.put("/facility/:facilityId/approve", protectAdmin, approveFacility);
-router.put("/facility/:facilityId/reject", protectAdmin, rejectFacility);
 
 export default router;

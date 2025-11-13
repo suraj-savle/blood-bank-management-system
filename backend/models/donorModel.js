@@ -29,6 +29,10 @@ const donorSchema = new mongoose.Schema(
       required: [true, "Phone number is required"],
       match: [/^[6-9][0-9]{9}$/, "Please enter a valid 10-digit phone number"],
     },
+    role: {
+      type: String,
+      default: "donor",
+    },
 
     // 📍 Location
     address: {
