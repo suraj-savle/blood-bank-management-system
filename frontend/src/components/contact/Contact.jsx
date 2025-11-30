@@ -11,12 +11,15 @@ import {
   Facebook,
   Linkedin,
 } from "lucide-react";
+import Header from "../Header";
+import Footer from "../Footer";
 
 const Contact = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
+      <Header />
       {/* HERO SECTION */}
-      <section className="py-20 bg-gradient-to-r from-red-600 to-red-700 text-white text-center">
+      <section className="py-20 mt-20 bg-gradient-to-r from-red-600 to-red-700 text-white text-center">
         <h1 className="text-5xl font-bold mb-4">Get in Touch</h1>
         <p className="text-xl opacity-90 max-w-2xl mx-auto">
           We’re here to support you. Reach out to us for any help, queries, or blood-related assistance.
@@ -153,7 +156,7 @@ const Contact = () => {
       </section>
 
       {/* MAP SECTION */}
-      <section>
+      <section className="mb-5">
         <iframe
           title="map"
           className="w-full h-96"
@@ -163,10 +166,7 @@ const Contact = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 text-white py-10 text-center">
-        <p className="text-gray-400">© 2024 BloodConnect. All rights reserved.</p>
-        <p className="text-gray-400 mt-1">Made with ❤️ for humanity</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

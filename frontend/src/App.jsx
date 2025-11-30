@@ -26,6 +26,7 @@ import BloodLabDonor from "./pages/bloodlab/BloodLabDonor";
 import DonorDirectory from "./pages/hospital/DonorDirectory";
 import About from "./components/about/About";
 import Contact from "./components/contact/Contact";
+import DonorDonationHistory from "./pages/donor/DonorDonationHistory";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
           <Route index element={<DonorDashboard />} />
           <Route path="profile" element={<DonorProfile />} />
           <Route path="camps" element={<DonorCampsList />} />
+          <Route path="history" element={<DonorDonationHistory />} />
         </Route>
       
         <Route path="/hospital" element={<ProtectedRoute><DashboardLayout userRole="hospital" /></ProtectedRoute>}>

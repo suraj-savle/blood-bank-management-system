@@ -86,7 +86,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       items: [
         { path: "/donor", label: "Dashboard", icon: BarChart3, badge: null },
         { path: "/donor/profile", label: "My Profile", icon: User, badge: null },
-        { path: "/donor/donate", label: "Donate Blood", icon: Droplet, badge: null },
         { path: "/donor/history", label: "Donation History", icon: History, badge: null },
         { path: "/donor/camps", label: "Blood Camps", icon: Calendar, badge: null },
       ],
@@ -102,7 +101,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
         { path: "/hospital/inventory", label: "Inventory", icon: Droplet, badge: null },
         { path: "/hospital/donors", label: "Donors", icon: User, badge: null },
         { path: "/hospital/blood-request-history", label: "History", icon: Ambulance, badge: null },
-        { path: "/hospital/reports", label: "Reports", icon: Activity, badge: null },
       ],
     },
     blood_lab: {
@@ -129,12 +127,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
         { path: "/admin/verification", label: "Verification", icon: Shield, badge: null },
         { path: "/admin/facilities", label: "Facilities", icon: Building, badge: null },
         { path: "/admin/donors", label: "Donors", icon: User, badge: null },
-        { path: "/admin/inventory", label: "Inventory", icon: Droplet, badge: null },
-        { path: "/admin/requests", label: "Requests", icon: ClipboardList, badge: null },
-        { path: "/admin/camps", label: "Camps", icon: Calendar, badge: "2" },
-        { path: "/admin/emergency", label: "Emergency", icon: AlertTriangle, badge: null },
-        { path: "/admin/analytics", label: "Analytics", icon: Activity, badge: null },
-        { path: "/admin/settings", label: "Settings", icon: Settings, badge: null },
       ],
     },
   };

@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -78,6 +81,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Header />
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md border border-gray-200">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">
           Login to Blood Bank
@@ -145,7 +149,7 @@ export default function Login() {
         <p className="mt-6 text-center text-gray-600 text-sm">
           Don't have an account?{" "}
           <a
-            href="/createaccount"
+            href="/"
             className="text-red-600 font-medium hover:underline"
           >
             Register

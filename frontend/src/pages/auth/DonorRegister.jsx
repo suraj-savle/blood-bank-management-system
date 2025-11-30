@@ -40,7 +40,7 @@ const validators = {
     if (!/^[6-9][0-9]{9}$/.test(value)) return "Emergency contact must start with 6-9";
     return "";
   },
-  dob: (value, formData) => {
+  dob: (value) => {
     if (!value) return "Date of birth is required";
     const age = calculateAge(value);
     if (age < 18 || age > 65) return "Donor must be between 18 and 65 years old";
@@ -315,12 +315,12 @@ export default function DonorRegisterForm() {
   const progressPercentage = (step / 3) * 100;
 
   return (
-    <div className="min-h-screen bg-red-50 flex items-center justify-center py-8 px-4">
+    <div className="min-h-screen bg-red-50 flex items-center justify-center py-8 px-4 outline-0">
       <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header Section */}
-        <div className="bg-red-600 text-white p-6">
+        <div className="bg-red-700 text-white p-6">
           <h1 className="text-2xl font-bold text-center mb-2">
-            🩸 Blood Donor Registration
+            Blood Donor Registration
           </h1>
           <p className="text-center mb-4 opacity-90">
             Join our life-saving mission in 3 simple steps

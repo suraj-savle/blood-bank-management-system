@@ -342,7 +342,7 @@ export default function FacilityRegisterForm() {
     <div className="min-h-screen bg-red-50 flex items-center justify-center py-8 px-4">
       <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header Section */}
-        <div className="bg-red-600 text-white p-6">
+        <div className="bg-red-700 text-white p-6">
           <h1 className="text-2xl font-bold text-center mb-2">
             Blood Facility Registration
           </h1>

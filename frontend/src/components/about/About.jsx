@@ -12,6 +12,8 @@ import {
   Mail,
   Globe
 } from 'lucide-react';
+import Footer from '../Footer';
+import Header from '../Header';
 
 const AboutUs = () => {
   const stats = [
@@ -73,8 +75,9 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
+      <Header />
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-r from-red-600 to-red-700 text-white">
+      <section className="relative py-20 mt-20 bg-gradient-to-r from-red-600 to-red-700 text-white">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
@@ -258,22 +261,7 @@ const AboutUs = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center mb-6">
-            <Droplet className="w-8 h-8 text-red-500 mr-3" />
-            <span className="text-2xl font-bold">BloodConnect</span>
-          </div>
-          <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
-            Connecting hearts, saving lives. We are committed to making blood donation 
-            accessible and safe for everyone, everywhere.
-          </p>
-          <div className="text-gray-400">
-            <p>&copy; 2024 BloodConnect. All rights reserved.</p>
-            <p className="mt-2">Made with ❤️ for humanity</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
