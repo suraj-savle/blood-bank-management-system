@@ -1,62 +1,49 @@
+// models/bloodModel.js
 import mongoose from "mongoose";
 
-const bloodSchema = new mongoose.Schema(
-  {
-    bloodType: {
-      type: String,
-      enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-      required: true,
-    },
-    quantity: {
-      type: Number, // in milliliters (ml)
-      required: true,
-      min: 0,
-    },
-    collectionDate: {
-      type: Date,
-      default: Date.now,
-    },
-    expirationDate: {
-      type: Date,
-      // required: true,
-    },
-    hospital: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["available", "used", "expired"],
-      default: "available",
-    },
+const bloodSchema = new mongoose.Schema({
+  bloodGroup: { 
+    type: String, 
+    required: true,
+    enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
   },
-  { timestamps: true }
-);
+  quantity: { 
+    type: Number, 
+    required: true,
+    min: 0,
+    default: 0 
+  },
+  expiryDate: { 
+    type: Date, 
+    required: true 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  bloodLab: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Facility" 
+  },
+  hospital: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Facility" 
+  },
+}, { timestamps: true });
 
-// Pre-save middleware to set expiration date (42 days after collection)
-bloodSchema.pre("save", function (next) {
-  if (this.collectionDate && !this.expirationDate) {
-    const expiration = new Date(this.collectionDate);
-    expiration.setDate(expiration.getDate() + 42);
-    this.expirationDate = expiration;
+// Add validation to ensure either bloodLab OR hospital is set
+bloodSchema.pre('save', function(next) {
+  if (!this.bloodLab && !this.hospital) {
+    return next(new Error('Either bloodLab or hospital must be provided'));
+  }
+  if (this.bloodLab && this.hospital) {
+    return next(new Error('Blood unit cannot belong to both bloodLab and hospital'));
   }
   next();
 });
 
-// Virtual for checking if blood is expired
-bloodSchema.virtual("isExpired").get(function () {
-  return new Date() > this.expirationDate;
-});
-
-// Update status if expired
-bloodSchema.post("find", function (docs) {
-  docs.forEach(async (doc) => {
-    if (doc.isExpired && doc.status !== "expired") {
-      doc.status = "expired";
-      await doc.save();
-    }
-  });
-});
+// Add index for better query performance
+bloodSchema.index({ bloodLab: 1, bloodGroup: 1 });
+bloodSchema.index({ hospital: 1, bloodGroup: 1 });
 
 export default mongoose.model("Blood", bloodSchema);

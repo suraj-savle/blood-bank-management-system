@@ -1,37 +1,50 @@
 import express from "express";
 import mongoose from "mongoose";
-import authentication_routes from "./routes/authentication.js";
-import hospital_routes from "./routes/hospital.js";
-import campRoutes from "./routes/campRoutes.js";
-
-// Load environment variables
 import dotenv from "dotenv";
-dotenv.config();
+import cors from "cors";
+import authRoutes from "./routes/authRoutes.js";
+import donorRoutes from "./routes/donorRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import facilityRoutes from "./routes/facilityRoutes.js";
 
-// load express app
+
+dotenv.config();
 const app = express();
+
 app.use(express.json());
 
-// authentication routes like login, register
-app.use("/api/auth", authentication_routes);
-
-// Hospital routes
-app.use("/api", hospital_routes);
-
-// Camp routes
-app.use("/api/camps", campRoutes);
+app.use(cors({
+  origin: "http://localhost:5173", // or 3000
+  credentials: true,
+}));
 
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send({ error: 'Something went wrong!' });
-});
+// 🧩 Routes
+
+app.use("/api/auth", authRoutes);
+
+
+app.use("/api/donor", donorRoutes);
+
+app.use("/api/facility", facilityRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 
 
-// Connect to MongoDB and start the server
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  console.log("MongoDB Connected");
-  app.listen(5000, () => console.log("Server running on port 5000"));
-}).catch((err) => console.log(err));
+import bloodLabRoutes from "./routes/bloodLabRoutes.js";
+app.use("/api/blood-lab", bloodLabRoutes);
+
+
+import hospitalRoutes from "./routes/hospitalRoutes.js";
+app.use("/api/hospital", hospitalRoutes);
+
+
+// 🗄️ DB Connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected ✅"))
+  .catch((err) => console.log("MongoDB Error ❌", err));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));

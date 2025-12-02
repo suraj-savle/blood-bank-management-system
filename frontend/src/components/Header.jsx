@@ -1,183 +1,191 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
-export default function Header({ onRoleChange, currentUser }) {
+const WEBSITE_NAME = import.meta.env.VITE_WEBSITE_NAME;
+
+export default function Header({ currentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [role, setRole] = useState("Donor");
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
 
-  function handleRoleChange(e) {
-    setRole(e.target.value);
-    if (onRoleChange) onRoleChange(e.target.value);
-  }
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      setScrolled(isScrolled);
+    };
 
-  // Navigation links based on user role
-  const getNavLinks = () => {
-    const commonLinks = [
-      { name: "Home", path: "/" },
-      { name: "About", path: "/about" },
-      { name: "Contact", path: "/contact" }
-    ];
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    if (currentUser) {
-      // User is logged in
-      return [
-        ...commonLinks,
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+    { name: "Contact", path: "/contact" },
+  ];
+
+  const authLinks = currentUser
+    ? [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Profile", path: "/profile" },
-        { name: "Logout", path: "/logout" }
-      ];
-    } else {
-      // User is not logged in
-      return [
-        ...commonLinks,
+      ]
+    : [
         { name: "Login", path: "/login" },
-        { name: "Create Account", path: "/createaccount" }
+        { name: "Register as Donor", path: "/register/donor" },
+        { name: "Register as Facility", path: "/register/facility" },
       ];
-    }
+
+  const isActiveLink = (path) => {
+    return location.pathname === path;
   };
 
-  // Admin-specific links
-  const adminLinks = role === "Admin" ? [
-    { name: "Admin Panel", path: "/admin" },
-    { name: "User Management", path: "/admin/users" }
-  ] : [];
-
-  const navLinks = [...getNavLinks(), ...adminLinks];
-
   return (
-    <header className="w-full bg-white shadow-sm border-b">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100" 
+          : "bg-white/90 backdrop-blur-sm border-b border-gray-100"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* left: logo + title */}
-          <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center gap-3">
-              {/* simple blood-drop logo */}
-              <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="w-6 h-6 text-red-600"
-                >
-                  <path d="M12 2C12 2 6 8 6 12a6 6 0 0012 0c0-4-6-10-6-10z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-800">BloodBank</h1>
-                <p className="text-xs text-gray-500 -mt-0.5">Management System</p>
-              </div>
-            </a>
-
-            {/* role select (hidden on very small screens) */}
-            <div className="hidden sm:flex items-center ml-4">
-              <label className="sr-only">Role</label>
-              <select
-                value={role}
-                onChange={handleRoleChange}
-                className="border rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-300"
+        <div className="flex justify-between items-center h-20">
+          {/* Logo + Title */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5 text-white"
               >
-                <option>Donor</option>
-                <option>Hospital</option>
-                <option>Admin</option>
-                <option>Clerk</option>
-              </select>
+                <path d="M12 2C12 2 6 8 6 12a6 6 0 0012 0c0-4-6-10-6-10z" />
+              </svg>
             </div>
-          </div>
+            <div className="flex flex-col">
+              <h1 className="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors duration-200">
+                {WEBSITE_NAME}
+              </h1>
+              <p className="text-xs text-gray-500 -mt-0.5 font-medium">
+                Blood Management System
+              </p>
+            </div>
+          </Link>
 
-          {/* Desktop navigation links */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.path}
-                className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors"
+                to={link.path}
+                className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  isActiveLink(link.path)
+                    ? "text-red-700 bg-red-50"
+                    : "text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                }`}
               >
                 {link.name}
-              </a>
+                
+              </Link>
+            ))}
+            
+            {/* Separator */}
+            <div className="w-px h-6 bg-gray-300 mx-2"></div>
+            
+            {/* Auth Links */}
+            {authLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  link.name.includes("Register")
+                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg hover:shadow-xl hover:from-red-700 hover:to-red-800 hover:scale-105"
+                    : isActiveLink(link.path)
+                    ? "text-red-700 bg-red-50"
+                    : "text-gray-700 hover:text-red-600 hover:bg-gray-50"
+                }`}
+              >
+                {link.name}
+              </Link>
             ))}
           </nav>
 
-          {/* right: actions */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="hidden md:inline-flex items-center px-3 py-1.5 border rounded-md text-sm bg-red-50 text-red-600 border-red-100 hover:bg-red-100 transition-colors"
-            >
-              New Request
-            </button>
-
-            <button
-              type="button"
-              className="p-2 rounded-md hover:bg-gray-100 focus:outline-none transition-colors"
-              aria-label="Notifications"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h11z" />
-              </svg>
-            </button>
-
-            {/* user avatar */}
-            <div className="relative">
-              <button className="flex items-center gap-2 p-1 rounded-md hover:bg-gray-100 focus:outline-none transition-colors">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm text-gray-700">
-                  {currentUser ? currentUser.initials : "GU"}
-                </div>
-                <span className="hidden sm:inline-block text-sm text-gray-700">
-                  {currentUser ? currentUser.name : "Guest"}
-                </span>
-              </button>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className={`md:hidden p-2 rounded-xl transition-all duration-200 ${
+              mobileOpen 
+                ? "bg-red-50 text-red-600" 
+                : "hover:bg-gray-100 text-gray-600"
+            }`}
+            aria-label="Toggle menu"
+          >
+            <div className="relative w-6 h-6">
+              <span className={`absolute top-1/2 left-1/2 w-5 h-0.5 bg-current transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                mobileOpen ? "rotate-45" : "-translate-y-1.5"
+              }`}></span>
+              <span className={`absolute top-1/2 left-1/2 w-5 h-0.5 bg-current transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                mobileOpen ? "opacity-0" : "opacity-100"
+              }`}></span>
+              <span className={`absolute top-1/2 left-1/2 w-5 h-0.5 bg-current transform -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ${
+                mobileOpen ? "-rotate-45" : "translate-y-1.5"
+              }`}></span>
             </div>
-
-            {/* mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setMobileOpen((s) => !s)}
-                className="p-2 rounded-md hover:bg-gray-100 focus:outline-none transition-colors"
-                aria-label="Open menu"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  {mobileOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
-            </div>
-          </div>
+          </button>
         </div>
 
-        {/* mobile dropdown */}
-        {mobileOpen && (
-          <nav className="md:hidden mt-2 pb-4 border-t">
-            <div className="px-2 space-y-1">
-              <select
-                value={role}
-                onChange={handleRoleChange}
-                className="w-full border rounded-md px-2 py-2 text-sm mb-2"
-              >
-                <option>Donor</option>
-                <option>Hospital</option>
-                <option>Admin</option>
-                <option>Clerk</option>
-              </select>
-
+        {/* Mobile Dropdown */}
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${
+          mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}>
+          <div className="border-t border-gray-200 pt-4 pb-6 px-3 bg-white/95 backdrop-blur-sm rounded-b-2xl shadow-lg">
+            {/* Main Navigation Links */}
+            <div className="space-y-1 mb-4">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.path}
-                  className="block px-2 py-2 rounded hover:bg-gray-50 transition-colors"
+                  to={link.path}
+                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
+                    isActiveLink(link.path)
+                      ? "bg-red-50 text-red-700 border-l-4 border-red-500"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-red-600"
+                  }`}
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
-              
-              <button className="w-full text-left px-2 py-2 rounded hover:bg-gray-50 transition-colors">
-                New Request
-              </button>
             </div>
-          </nav>
-        )}
+            
+            {/* Auth Links */}
+            <div className="space-y-2 border-t border-gray-200 pt-4">
+              {authLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
+                    link.name.includes("Register")
+                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg text-center hover:shadow-xl"
+                      : isActiveLink(link.path)
+                      ? "bg-red-50 text-red-700 border-l-4 border-red-500"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-red-600 text-center"
+                  }`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   );
