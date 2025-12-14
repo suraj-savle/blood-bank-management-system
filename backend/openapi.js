@@ -1,7 +1,7 @@
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
-// Opções de configuração do Swagger
+// swagger config
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
@@ -11,11 +11,13 @@ const swaggerOptions = {
             description: 'Blood Bank Management System (BBMS) RESTful api',
         },
     },
-    apis: ['./routes/*.js'], // Caminho para os arquivos de rotas
+    apis: ['./routes/*.js'],
 };
 
-// Inicialização do swagger-jsdoc
+// setup 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-// Usar Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+export {
+  swaggerDocs,
+  swaggerUi
+}
