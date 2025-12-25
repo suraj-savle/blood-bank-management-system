@@ -9,5 +9,4 @@ router.post("/login", login);
 // PROFILE (Protected Route)
 router.get("/profile", protect, getProfile);
 
-
 export default router;
