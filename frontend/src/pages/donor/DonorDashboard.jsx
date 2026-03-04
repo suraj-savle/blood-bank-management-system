@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/donor";
+const API_URL = "/api/donor";
 
 const DonorDashboard = () => {
   const [dashboard, setDashboard] = useState(null);

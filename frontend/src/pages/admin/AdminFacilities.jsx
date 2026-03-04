@@ -26,7 +26,7 @@ const FacilityApproval = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const token = localStorage.getItem("token");
-  const API_URL = "http://localhost:5000/api/admin";
+  const API_URL = "/api/admin";
 
   // Fetch pending facilities
   const fetchPendingFacilities = async (showToast = false) => {

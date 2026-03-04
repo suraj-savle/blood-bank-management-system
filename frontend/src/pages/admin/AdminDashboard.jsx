@@ -34,7 +34,7 @@ const AdminDashboard = () => {
 
       console.log("🔄 Fetching admin dashboard stats...");
       
-      const res = await fetch("http://localhost:5000/api/admin/dashboard", {
+      const res = await fetch("/api/admin/dashboard", {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

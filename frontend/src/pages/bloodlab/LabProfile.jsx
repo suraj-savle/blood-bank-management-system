@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 // NOTE: Using localStorage and hardcoded URL for API connection as per previous context.
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "/api";
 
 // Define a default structured object for operating hours
 const defaultOperatingHours = {
