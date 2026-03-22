@@ -68,11 +68,11 @@ cd vertical-pod-autoscaler
 cd deploy
 
 #### Apply all manifest files in deploy folder.
-k apply -f .
+kubectl apply -f .
 
 #### Apply below command to create VPA .
 
-kubectl apply -f vpa.yml (autoscaling when resource increase when reaching threshold)
+kubectl apply -f vpa.yml 
 
 #### Create frontend deployment ( Modify the image before applying backend.yml )
 
