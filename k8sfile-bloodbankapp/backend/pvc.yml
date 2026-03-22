@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-pvc
+  namespace: blood-bank
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+  volumeName: backend-pv
