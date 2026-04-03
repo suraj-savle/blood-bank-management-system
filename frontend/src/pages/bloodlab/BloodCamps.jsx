@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Plus, 
-  Trash2, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Plus,
+  Trash2,
   Edit3,
   Search,
   ChevronDown,
@@ -13,7 +13,7 @@ import {
   Droplet,
   CheckCircle,
   XCircle,
-  MoreVertical
+  MoreVertical,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -23,24 +23,24 @@ const BloodCamps = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingCamp, setEditingCamp] = useState(null);
   const [filters, setFilters] = useState({
-    status: 'all',
-    search: '',
-    sortBy: 'date',
-    sortOrder: 'desc'
+    status: "all",
+    search: "",
+    sortBy: "date",
+    sortOrder: "desc",
   });
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalCamps: 0,
     hasNext: false,
-    hasPrev: false
+    hasPrev: false,
   });
   const [stats, setStats] = useState({
     upcoming: 0,
     ongoing: 0,
     completed: 0,
     cancelled: 0,
-    total: 0
+    total: 0,
   });
 
   const [formData, setFormData] = useState({
@@ -62,7 +62,7 @@ const BloodCamps = () => {
 
   const token = localStorage.getItem("token");
   // Fixed API URL - removed /blood-lab if it doesn't exist
-  const API_URL = "/api/blood-lab";
+  const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/blood-lab`;
 
   console.log("🔧 BloodCamps Component State:", {
     campsCount: camps.length,
@@ -72,18 +72,18 @@ const BloodCamps = () => {
     filters,
     pagination,
     stats,
-    token: token ? "Present" : "Missing"
+    token: token ? "Present" : "Missing",
   });
 
   // Calculate stats from camps data
   const calculateStats = (campsData) => {
     console.log("📊 Calculating stats from camps:", campsData);
     const stats = {
-      upcoming: campsData.filter(camp => camp.status === 'Upcoming').length,
-      ongoing: campsData.filter(camp => camp.status === 'Ongoing').length,
-      completed: campsData.filter(camp => camp.status === 'Completed').length,
-      cancelled: campsData.filter(camp => camp.status === 'Cancelled').length,
-      total: campsData.length
+      upcoming: campsData.filter((camp) => camp.status === "Upcoming").length,
+      ongoing: campsData.filter((camp) => camp.status === "Ongoing").length,
+      completed: campsData.filter((camp) => camp.status === "Completed").length,
+      cancelled: campsData.filter((camp) => camp.status === "Cancelled").length,
+      total: campsData.length,
     };
     console.log("📈 Calculated stats:", stats);
     return stats;
@@ -101,8 +101,10 @@ const BloodCamps = () => {
     if (!data.venue?.trim()) newErrors.venue = "Venue is required";
     if (!data.city?.trim()) newErrors.city = "City is required";
     if (!data.state?.trim()) newErrors.state = "State is required";
-    if (!data.pincode?.match(/^[1-9][0-9]{5}$/)) newErrors.pincode = "Valid 6-digit pincode required";
-    if (!data.expectedDonors || data.expectedDonors < 1) newErrors.expectedDonors = "Expected donors must be at least 1";
+    if (!data.pincode?.match(/^[1-9][0-9]{5}$/))
+      newErrors.pincode = "Valid 6-digit pincode required";
+    if (!data.expectedDonors || data.expectedDonors < 1)
+      newErrors.expectedDonors = "Expected donors must be at least 1";
 
     // Date validation
     const today = new Date();
@@ -126,14 +128,14 @@ const BloodCamps = () => {
     try {
       setLoading(true);
       console.log("🔄 Fetching camps with filters:", { ...filters, page });
-      
+
       const queryParams = new URLSearchParams({
         status: filters.status,
         page: page.toString(),
-        limit: '8',
+        limit: "8",
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder,
-        ...(filters.search && { search: filters.search })
+        ...(filters.search && { search: filters.search }),
       });
 
       // Try different endpoint variations
@@ -141,9 +143,9 @@ const BloodCamps = () => {
       console.log("📡 API URL:", url);
 
       const res = await fetch(url, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       });
 
@@ -153,37 +155,47 @@ const BloodCamps = () => {
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await res.text();
-        console.error("❌ Server returned non-JSON response:", text.substring(0, 200));
-        throw new Error("Server returned HTML instead of JSON. Check API endpoint.");
+        console.error(
+          "❌ Server returned non-JSON response:",
+          text.substring(0, 200),
+        );
+        throw new Error(
+          "Server returned HTML instead of JSON. Check API endpoint.",
+        );
       }
 
       if (!res.ok) {
         const errorData = await res.json();
         console.error("❌ API Error Response:", errorData);
-        throw new Error(errorData.message || `Failed to fetch camps: ${res.status}`);
+        throw new Error(
+          errorData.message || `Failed to fetch camps: ${res.status}`,
+        );
       }
 
       const data = await res.json();
       console.log("✅ API Response data:", data);
-      
+
       if (data.success) {
         const campsData = data.data?.camps || data.camps || [];
         const calculatedStats = calculateStats(campsData);
-        
+
         console.log("📊 Setting camps data:", {
           campsCount: campsData.length,
           pagination: data.data?.pagination || data.pagination,
-          stats: calculatedStats
+          stats: calculatedStats,
         });
-        
+
         setCamps(campsData);
-        setPagination(data.data?.pagination || data.pagination || {
-          currentPage: 1,
-          totalPages: 1,
-          totalCamps: 0,
-          hasNext: false,
-          hasPrev: false
-        });
+        setPagination(
+          data.data?.pagination ||
+            data.pagination || {
+              currentPage: 1,
+              totalPages: 1,
+              totalCamps: 0,
+              hasNext: false,
+              hasPrev: false,
+            },
+        );
         setStats(calculatedStats);
       } else {
         console.error("❌ API returned success: false", data);
@@ -199,14 +211,14 @@ const BloodCamps = () => {
         totalPages: 1,
         totalCamps: 0,
         hasNext: false,
-        hasPrev: false
+        hasPrev: false,
       });
       setStats({
         upcoming: 0,
         ongoing: 0,
         completed: 0,
         cancelled: 0,
-        total: 0
+        total: 0,
       });
     } finally {
       setLoading(false);
@@ -217,12 +229,12 @@ const BloodCamps = () => {
   const updateCampStatus = async (campId, newStatus) => {
     try {
       console.log("🔄 Updating camp status:", { campId, newStatus });
-      
+
       // Try different endpoint variations
       const endpoints = [
         `${API_URL}/camps/${campId}/status`,
         `${API_URL}/camps/${campId}`,
-        `${API_URL}/camps/${campId}/status`
+        `${API_URL}/camps/${campId}/status`,
       ];
 
       let lastError = null;
@@ -230,7 +242,7 @@ const BloodCamps = () => {
       for (const url of endpoints) {
         try {
           console.log("🔗 Trying endpoint:", url);
-          
+
           const payload = { status: newStatus };
           const res = await fetch(url, {
             method: "PATCH",
@@ -245,12 +257,19 @@ const BloodCamps = () => {
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await res.text();
-            console.warn("⚠️ Non-JSON response from", url, text.substring(0, 100));
+            console.warn(
+              "⚠️ Non-JSON response from",
+              url,
+              text.substring(0, 100),
+            );
             continue; // Try next endpoint
           }
 
           const data = await res.json();
-          console.log("📨 Status update response:", { status: res.status, data });
+          console.log("📨 Status update response:", {
+            status: res.status,
+            data,
+          });
 
           if (res.ok && data.success) {
             toast.success(`Camp marked as ${newStatus.toLowerCase()}!`);
@@ -258,7 +277,9 @@ const BloodCamps = () => {
             fetchCamps(); // Refresh the list
             return; // Success, exit function
           } else {
-            lastError = new Error(data.message || "Failed to update camp status");
+            lastError = new Error(
+              data.message || "Failed to update camp status",
+            );
           }
         } catch (err) {
           console.warn("⚠️ Endpoint failed:", url, err.message);
@@ -272,7 +293,6 @@ const BloodCamps = () => {
       } else {
         throw new Error("No valid endpoint found for status update");
       }
-
     } catch (err) {
       console.error("🚨 Status update error:", err);
       toast.error(err.message || "Error updating camp status");
@@ -307,8 +327,11 @@ const BloodCamps = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    
-    console.log("📤 Form submission started:", { formData, editingCamp: editingCamp?._id });
+
+    console.log("📤 Form submission started:", {
+      formData,
+      editingCamp: editingCamp?._id,
+    });
 
     const formErrors = validateForm(formData);
     if (Object.keys(formErrors).length > 0) {
@@ -319,10 +342,7 @@ const BloodCamps = () => {
 
     try {
       // Try different endpoint variations
-      const baseUrls = [
-        `${API_URL}/camps`,
-        `${API_URL}/camps`
-      ];
+      const baseUrls = [`${API_URL}/camps`, `${API_URL}/camps`];
 
       let lastError = null;
 
@@ -364,21 +384,33 @@ const BloodCamps = () => {
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await res.text();
-            console.warn("⚠️ Non-JSON response from", url, text.substring(0, 100));
+            console.warn(
+              "⚠️ Non-JSON response from",
+              url,
+              text.substring(0, 100),
+            );
             continue;
           }
 
           const data = await res.json();
-          console.log("📨 Form submission response:", { status: res.status, data });
+          console.log("📨 Form submission response:", {
+            status: res.status,
+            data,
+          });
 
           if (res.ok && data.success) {
-            toast.success(`Blood Camp ${editingCamp ? 'Updated' : 'Added'} Successfully!`);
+            toast.success(
+              `Blood Camp ${editingCamp ? "Updated" : "Added"} Successfully!`,
+            );
             resetForm();
             setShowForm(false);
             fetchCamps();
             return; // Success, exit function
           } else {
-            lastError = new Error(data.message || `Failed to ${editingCamp ? 'update' : 'add'} blood camp`);
+            lastError = new Error(
+              data.message ||
+                `Failed to ${editingCamp ? "update" : "add"} blood camp`,
+            );
           }
         } catch (err) {
           console.warn("⚠️ Endpoint failed:", url, err.message);
@@ -392,10 +424,11 @@ const BloodCamps = () => {
       } else {
         throw new Error("No valid endpoint found for camp operation");
       }
-
     } catch (err) {
       console.error("🚨 Form submission error:", err);
-      toast.error(err.message || `Error ${editingCamp ? 'updating' : 'adding'} camp`);
+      toast.error(
+        err.message || `Error ${editingCamp ? "updating" : "adding"} camp`,
+      );
     } finally {
       setSubmitting(false);
     }
@@ -408,7 +441,7 @@ const BloodCamps = () => {
     setFormData({
       title: camp.title,
       description: camp.description || "",
-      date: new Date(camp.date).toISOString().split('T')[0],
+      date: new Date(camp.date).toISOString().split("T")[0],
       startTime: camp.time.start,
       endTime: camp.time.end,
       venue: camp.location.venue,
@@ -418,20 +451,22 @@ const BloodCamps = () => {
       expectedDonors: camp.expectedDonors.toString(),
     });
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle delete
   const handleDeleteCamp = async (id) => {
     console.log("🗑️ Deleting camp:", id);
-    if (!window.confirm("Are you sure you want to delete this camp? This action cannot be undone.")) return;
-    
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this camp? This action cannot be undone.",
+      )
+    )
+      return;
+
     try {
       // Try different endpoint variations
-      const endpoints = [
-        `${API_URL}/camps/${id}`,
-        `${API_URL}/camps/${id}`
-      ];
+      const endpoints = [`${API_URL}/camps/${id}`, `${API_URL}/camps/${id}`];
 
       let lastError = null;
 
@@ -441,9 +476,9 @@ const BloodCamps = () => {
 
           const res = await fetch(url, {
             method: "DELETE",
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
           });
 
@@ -451,7 +486,11 @@ const BloodCamps = () => {
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await res.text();
-            console.warn("⚠️ Non-JSON response from", url, text.substring(0, 100));
+            console.warn(
+              "⚠️ Non-JSON response from",
+              url,
+              text.substring(0, 100),
+            );
             continue;
           }
 
@@ -477,7 +516,6 @@ const BloodCamps = () => {
       } else {
         throw new Error("No valid endpoint found for delete operation");
       }
-
     } catch (err) {
       console.error("🚨 Delete camp error:", err);
       toast.error(err.message || "Error deleting camp");
@@ -487,27 +525,45 @@ const BloodCamps = () => {
   // Handle input change
   const handleInputChange = (field, value) => {
     console.log("⌨️ Input change:", field, value);
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   // Status badge component
   const StatusBadge = ({ status }) => {
     const statusConfig = {
-      Upcoming: { color: "bg-blue-100 text-blue-800", label: "Upcoming", icon: Calendar },
-      Ongoing: { color: "bg-green-100 text-green-800", label: "Ongoing", icon: Clock },
-      Completed: { color: "bg-gray-100 text-gray-800", label: "Completed", icon: CheckCircle },
-      Cancelled: { color: "bg-red-100 text-red-800", label: "Cancelled", icon: XCircle }
+      Upcoming: {
+        color: "bg-blue-100 text-blue-800",
+        label: "Upcoming",
+        icon: Calendar,
+      },
+      Ongoing: {
+        color: "bg-green-100 text-green-800",
+        label: "Ongoing",
+        icon: Clock,
+      },
+      Completed: {
+        color: "bg-gray-100 text-gray-800",
+        label: "Completed",
+        icon: CheckCircle,
+      },
+      Cancelled: {
+        color: "bg-red-100 text-red-800",
+        label: "Cancelled",
+        icon: XCircle,
+      },
     };
 
     const config = statusConfig[status] || statusConfig.Upcoming;
     const IconComponent = config.icon;
 
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${config.color}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${config.color}`}
+      >
         <IconComponent size={12} />
         {config.label}
       </span>
@@ -517,39 +573,75 @@ const BloodCamps = () => {
   // Get available status actions for a camp - FIXED to include Completed
   const getAvailableActions = (camp) => {
     const baseActions = [];
-    
+
     switch (camp.status) {
-      case 'Upcoming':
+      case "Upcoming":
         baseActions.push(
-          { label: 'Mark as Ongoing', value: 'Ongoing', color: 'text-green-600' },
-          { label: 'Cancel Camp', value: 'Cancelled', color: 'text-red-600' }
+          {
+            label: "Mark as Ongoing",
+            value: "Ongoing",
+            color: "text-green-600",
+          },
+          { label: "Cancel Camp", value: "Cancelled", color: "text-red-600" },
         );
         break;
-      case 'Ongoing':
+      case "Ongoing":
         baseActions.push(
-          { label: 'Mark as Completed', value: 'Completed', color: 'text-gray-600' },
-          { label: 'Cancel Camp', value: 'Cancelled', color: 'text-red-600' }
+          {
+            label: "Mark as Completed",
+            value: "Completed",
+            color: "text-gray-600",
+          },
+          { label: "Cancel Camp", value: "Cancelled", color: "text-red-600" },
         );
         break;
-      case 'Completed':
+      case "Completed":
         baseActions.push(
-          { label: 'Re-open as Ongoing', value: 'Ongoing', color: 'text-green-600' },
-          { label: 'Mark as Upcoming', value: 'Upcoming', color: 'text-blue-600' }
+          {
+            label: "Re-open as Ongoing",
+            value: "Ongoing",
+            color: "text-green-600",
+          },
+          {
+            label: "Mark as Upcoming",
+            value: "Upcoming",
+            color: "text-blue-600",
+          },
         );
         break;
-      case 'Cancelled':
+      case "Cancelled":
         baseActions.push(
-          { label: 'Re-schedule as Upcoming', value: 'Upcoming', color: 'text-blue-600' },
-          { label: 'Mark as Ongoing', value: 'Ongoing', color: 'text-green-600' }
+          {
+            label: "Re-schedule as Upcoming",
+            value: "Upcoming",
+            color: "text-blue-600",
+          },
+          {
+            label: "Mark as Ongoing",
+            value: "Ongoing",
+            color: "text-green-600",
+          },
         );
         break;
       default:
         // Default actions for any status
         baseActions.push(
-          { label: 'Mark as Upcoming', value: 'Upcoming', color: 'text-blue-600' },
-          { label: 'Mark as Ongoing', value: 'Ongoing', color: 'text-green-600' },
-          { label: 'Mark as Completed', value: 'Completed', color: 'text-gray-600' },
-          { label: 'Cancel Camp', value: 'Cancelled', color: 'text-red-600' }
+          {
+            label: "Mark as Upcoming",
+            value: "Upcoming",
+            color: "text-blue-600",
+          },
+          {
+            label: "Mark as Ongoing",
+            value: "Ongoing",
+            color: "text-green-600",
+          },
+          {
+            label: "Mark as Completed",
+            value: "Completed",
+            color: "text-gray-600",
+          },
+          { label: "Cancel Camp", value: "Cancelled", color: "text-red-600" },
         );
     }
 
@@ -569,7 +661,9 @@ const BloodCamps = () => {
                 </div>
                 Blood Donation Camps
               </h1>
-              <p className="text-gray-600 mt-1">Manage and organize blood donation camps</p>
+              <p className="text-gray-600 mt-1">
+                Manage and organize blood donation camps
+              </p>
             </div>
             <button
               onClick={() => {
@@ -579,31 +673,41 @@ const BloodCamps = () => {
               }}
               className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors"
             >
-              <Plus size={18} className="mr-2" /> 
-              {showForm ? 'Cancel' : 'Add Camp'}
+              <Plus size={18} className="mr-2" />
+              {showForm ? "Cancel" : "Add Camp"}
             </button>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {stats.total}
+              </div>
               <div className="text-sm text-gray-600">Total Camps</div>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-blue-400">
-              <div className="text-2xl font-bold text-blue-600">{stats.upcoming}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.upcoming}
+              </div>
               <div className="text-sm text-gray-600">Upcoming</div>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-green-400">
-              <div className="text-2xl font-bold text-green-600">{stats.ongoing}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.ongoing}
+              </div>
               <div className="text-sm text-gray-600">Ongoing</div>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-gray-400">
-              <div className="text-2xl font-bold text-gray-600">{stats.completed}</div>
+              <div className="text-2xl font-bold text-gray-600">
+                {stats.completed}
+              </div>
               <div className="text-sm text-gray-600">Completed</div>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-lg border-l-4 border-l-red-400">
-              <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {stats.cancelled}
+              </div>
               <div className="text-sm text-gray-600">Cancelled</div>
             </div>
           </div>
@@ -614,14 +718,17 @@ const BloodCamps = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   type="text"
                   placeholder="Search camps..."
                   value={filters.search}
                   onChange={(e) => {
                     console.log("🔍 Search filter:", e.target.value);
-                    setFilters(prev => ({ ...prev, search: e.target.value }))
+                    setFilters((prev) => ({ ...prev, search: e.target.value }));
                   }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
@@ -631,7 +738,7 @@ const BloodCamps = () => {
               value={filters.status}
               onChange={(e) => {
                 console.log("📊 Status filter:", e.target.value);
-                setFilters(prev => ({ ...prev, status: e.target.value }))
+                setFilters((prev) => ({ ...prev, status: e.target.value }));
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
@@ -645,7 +752,7 @@ const BloodCamps = () => {
               value={filters.sortBy}
               onChange={(e) => {
                 console.log("📈 Sort by:", e.target.value);
-                setFilters(prev => ({ ...prev, sortBy: e.target.value }))
+                setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
@@ -656,14 +763,18 @@ const BloodCamps = () => {
             <button
               onClick={() => {
                 console.log("🔄 Toggling sort order");
-                setFilters(prev => ({ 
-                  ...prev, 
-                  sortOrder: prev.sortOrder === 'desc' ? 'asc' : 'desc' 
-                }))
+                setFilters((prev) => ({
+                  ...prev,
+                  sortOrder: prev.sortOrder === "desc" ? "asc" : "desc",
+                }));
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              {filters.sortOrder === 'desc' ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+              {filters.sortOrder === "desc" ? (
+                <ChevronDown size={18} />
+              ) : (
+                <ChevronUp size={18} />
+              )}
             </button>
           </div>
         </div>
@@ -676,9 +787,9 @@ const BloodCamps = () => {
           >
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <Droplet className="w-5 h-5 text-red-600" />
-              {editingCamp ? 'Edit Blood Camp' : 'Add New Blood Camp'}
+              {editingCamp ? "Edit Blood Camp" : "Add New Blood Camp"}
             </h2>
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               {/* Title */}
               <div className="md:col-span-2">
@@ -688,13 +799,15 @@ const BloodCamps = () => {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.title ? 'border-red-500' : ''
+                    errors.title ? "border-red-500" : ""
                   }`}
                   placeholder="Enter camp title"
                 />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                {errors.title && (
+                  <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                )}
               </div>
 
               {/* Date */}
@@ -705,12 +818,14 @@ const BloodCamps = () => {
                 <input
                   type="date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  onChange={(e) => handleInputChange("date", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.date ? 'border-red-500' : ''
+                    errors.date ? "border-red-500" : ""
                   }`}
                 />
-                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+                {errors.date && (
+                  <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+                )}
               </div>
 
               {/* Times */}
@@ -722,12 +837,18 @@ const BloodCamps = () => {
                   <input
                     type="time"
                     value={formData.startTime}
-                    onChange={(e) => handleInputChange('startTime', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("startTime", e.target.value)
+                    }
                     className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                      errors.startTime ? 'border-red-500' : ''
+                      errors.startTime ? "border-red-500" : ""
                     }`}
                   />
-                  {errors.startTime && <p className="text-red-500 text-sm mt-1">{errors.startTime}</p>}
+                  {errors.startTime && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.startTime}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -736,12 +857,18 @@ const BloodCamps = () => {
                   <input
                     type="time"
                     value={formData.endTime}
-                    onChange={(e) => handleInputChange('endTime', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("endTime", e.target.value)
+                    }
                     className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                      errors.endTime ? 'border-red-500' : ''
+                      errors.endTime ? "border-red-500" : ""
                     }`}
                   />
-                  {errors.endTime && <p className="text-red-500 text-sm mt-1">{errors.endTime}</p>}
+                  {errors.endTime && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.endTime}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -753,13 +880,15 @@ const BloodCamps = () => {
                 <input
                   type="text"
                   value={formData.venue}
-                  onChange={(e) => handleInputChange('venue', e.target.value)}
+                  onChange={(e) => handleInputChange("venue", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.venue ? 'border-red-500' : ''
+                    errors.venue ? "border-red-500" : ""
                   }`}
                   placeholder="Enter venue name"
                 />
-                {errors.venue && <p className="text-red-500 text-sm mt-1">{errors.venue}</p>}
+                {errors.venue && (
+                  <p className="text-red-500 text-sm mt-1">{errors.venue}</p>
+                )}
               </div>
 
               <div>
@@ -769,13 +898,15 @@ const BloodCamps = () => {
                 <input
                   type="text"
                   value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  onChange={(e) => handleInputChange("city", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.city ? 'border-red-500' : ''
+                    errors.city ? "border-red-500" : ""
                   }`}
                   placeholder="Enter city"
                 />
-                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+                {errors.city && (
+                  <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                )}
               </div>
 
               <div>
@@ -785,13 +916,15 @@ const BloodCamps = () => {
                 <input
                   type="text"
                   value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
+                  onChange={(e) => handleInputChange("state", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.state ? 'border-red-500' : ''
+                    errors.state ? "border-red-500" : ""
                   }`}
                   placeholder="Enter state"
                 />
-                {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+                {errors.state && (
+                  <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+                )}
               </div>
 
               <div>
@@ -801,14 +934,16 @@ const BloodCamps = () => {
                 <input
                   type="text"
                   value={formData.pincode}
-                  onChange={(e) => handleInputChange('pincode', e.target.value)}
+                  onChange={(e) => handleInputChange("pincode", e.target.value)}
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.pincode ? 'border-red-500' : ''
+                    errors.pincode ? "border-red-500" : ""
                   }`}
                   placeholder="6-digit pincode"
                   maxLength={6}
                 />
-                {errors.pincode && <p className="text-red-500 text-sm mt-1">{errors.pincode}</p>}
+                {errors.pincode && (
+                  <p className="text-red-500 text-sm mt-1">{errors.pincode}</p>
+                )}
               </div>
 
               {/* Expected Donors */}
@@ -820,13 +955,19 @@ const BloodCamps = () => {
                   type="number"
                   min="1"
                   value={formData.expectedDonors}
-                  onChange={(e) => handleInputChange('expectedDonors', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("expectedDonors", e.target.value)
+                  }
                   className={`w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
-                    errors.expectedDonors ? 'border-red-500' : ''
+                    errors.expectedDonors ? "border-red-500" : ""
                   }`}
                   placeholder="Expected number of donors"
                 />
-                {errors.expectedDonors && <p className="text-red-500 text-sm mt-1">{errors.expectedDonors}</p>}
+                {errors.expectedDonors && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.expectedDonors}
+                  </p>
+                )}
               </div>
 
               {/* Description */}
@@ -836,7 +977,9 @@ const BloodCamps = () => {
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   rows={3}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   placeholder="Enter camp description (optional)"
@@ -851,7 +994,11 @@ const BloodCamps = () => {
                 disabled={submitting}
                 className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-2 rounded-lg transition-colors"
               >
-                {submitting ? 'Saving...' : (editingCamp ? 'Update Camp' : 'Create Camp')}
+                {submitting
+                  ? "Saving..."
+                  : editingCamp
+                    ? "Update Camp"
+                    : "Create Camp"}
               </button>
               <button
                 type="button"
@@ -879,11 +1026,15 @@ const BloodCamps = () => {
             <div className="text-gray-400 mb-4">
               <Droplet size={48} className="mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-800 mb-2">No blood camps found</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-2">
+              No blood camps found
+            </h3>
             <p className="text-gray-600 mb-4">
-              {filters.status !== 'all' || filters.search ? 'Try changing your filters' : 'Get started by creating your first blood camp'}
+              {filters.status !== "all" || filters.search
+                ? "Try changing your filters"
+                : "Get started by creating your first blood camp"}
             </p>
-            {!filters.search && filters.status === 'all' && (
+            {!filters.search && filters.status === "all" && (
               <button
                 onClick={() => {
                   console.log("➕ Create first camp clicked");
@@ -901,7 +1052,7 @@ const BloodCamps = () => {
               {camps.map((camp) => {
                 console.log("🎪 Rendering camp card:", camp._id, camp.title);
                 const availableActions = getAvailableActions(camp);
-                
+
                 return (
                   <div
                     key={camp._id}
@@ -922,7 +1073,11 @@ const BloodCamps = () => {
                         {availableActions.length > 0 && (
                           <div className="relative">
                             <button
-                              onClick={() => setActionMenu(actionMenu === camp._id ? null : camp._id)}
+                              onClick={() =>
+                                setActionMenu(
+                                  actionMenu === camp._id ? null : camp._id,
+                                )
+                              }
                               className="text-gray-600 hover:text-gray-700 p-1 transition-colors"
                               title="More actions"
                             >
@@ -933,7 +1088,9 @@ const BloodCamps = () => {
                                 {availableActions.map((action) => (
                                   <button
                                     key={action.value}
-                                    onClick={() => updateCampStatus(camp._id, action.value)}
+                                    onClick={() =>
+                                      updateCampStatus(camp._id, action.value)
+                                    }
                                     className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors ${action.color}`}
                                   >
                                     {action.label}
@@ -968,17 +1125,29 @@ const BloodCamps = () => {
 
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center">
-                        <Clock size={16} className="mr-2 text-red-500 flex-shrink-0" />
-                        <span>{camp.time.start} - {camp.time.end}</span>
+                        <Clock
+                          size={16}
+                          className="mr-2 text-red-500 flex-shrink-0"
+                        />
+                        <span>
+                          {camp.time.start} - {camp.time.end}
+                        </span>
                       </div>
                       <div className="flex items-start">
-                        <MapPin size={16} className="mr-2 text-red-500 flex-shrink-0 mt-0.5" />
+                        <MapPin
+                          size={16}
+                          className="mr-2 text-red-500 flex-shrink-0 mt-0.5"
+                        />
                         <span className="line-clamp-2">
-                          {camp.location.venue}, {camp.location.city}, {camp.location.state} - {camp.location.pincode}
+                          {camp.location.venue}, {camp.location.city},{" "}
+                          {camp.location.state} - {camp.location.pincode}
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <Users size={16} className="mr-2 text-red-500 flex-shrink-0" />
+                        <Users
+                          size={16}
+                          className="mr-2 text-red-500 flex-shrink-0"
+                        />
                         <span>Expected: {camp.expectedDonors} donors</span>
                       </div>
                       {camp.actualDonors > 0 && (

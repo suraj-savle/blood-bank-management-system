@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   CheckCircle,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import axios from "axios";
 
@@ -26,7 +26,7 @@ const HospitalDashboard = () => {
     lowStock: 0,
     expiringSoon: 0,
     pendingRequests: 0,
-    totalRequests: 0
+    totalRequests: 0,
   });
 
   useEffect(() => {
@@ -41,7 +41,8 @@ const HospitalDashboard = () => {
         }
 
         // Fetch hospital profile
-        const profileRes = await fetch("/api/facility/profile", {
+        const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/facility/profile`;
+        const profileRes = await fetch(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -74,18 +75,23 @@ const HospitalDashboard = () => {
         const requestsData = requestsRes.data.data || [];
 
         // Calculate stats
-        const totalUnits = stockData.reduce((sum, item) => sum + item.quantity, 0);
-        const lowStock = stockData.filter(item => item.quantity < 5).length;
-        
+        const totalUnits = stockData.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        );
+        const lowStock = stockData.filter((item) => item.quantity < 5).length;
+
         const today = new Date();
         const nextWeek = new Date(today);
         nextWeek.setDate(today.getDate() + 7);
-        const expiringSoon = stockData.filter(item => {
+        const expiringSoon = stockData.filter((item) => {
           const expiryDate = new Date(item.expiryDate);
           return expiryDate <= nextWeek && expiryDate > today;
         }).length;
 
-        const pendingRequests = requestsData.filter(req => req.status === "pending").length;
+        const pendingRequests = requestsData.filter(
+          (req) => req.status === "pending",
+        ).length;
 
         setHospital({
           name: h.name,
@@ -97,7 +103,7 @@ const HospitalDashboard = () => {
           status: h.status,
           operatingHours: h.operatingHours,
           history: h.history || [],
-          lastLogin: h.lastLogin
+          lastLogin: h.lastLogin,
         });
 
         setBloodStock(stockData);
@@ -107,9 +113,8 @@ const HospitalDashboard = () => {
           lowStock,
           expiringSoon,
           pendingRequests,
-          totalRequests: requestsData.length
+          totalRequests: requestsData.length,
         });
-
       } catch (err) {
         console.error("Error fetching hospital data:", err);
       } finally {
@@ -123,25 +128,27 @@ const HospitalDashboard = () => {
   const getLoginHistory = () => {
     if (!hospital?.history) return [];
     return hospital.history
-      .filter(event => event.eventType === "Login")
+      .filter((event) => event.eventType === "Login")
       .slice(0, 5) // Last 5 logins
-      .map(login => ({
+      .map((login) => ({
         date: login.date,
         description: login.description || "System login",
-        ip: login.description?.match(/\d+\.\d+\.\d+\.\d+/)?.[0] || "Facilities Login"
+        ip:
+          login.description?.match(/\d+\.\d+\.\d+\.\d+/)?.[0] ||
+          "Facilities Login",
       }));
   };
 
   const getRecentActivity = () => {
     if (!hospital?.history) return [];
     return hospital.history
-      .filter(event => event.eventType !== "Login")
+      .filter((event) => event.eventType !== "Login")
       .slice(0, 10) // Last 10 activities
-      .map(activity => ({
+      .map((activity) => ({
         date: activity.date,
         eventType: activity.eventType,
         description: activity.description,
-        referenceId: activity.referenceId
+        referenceId: activity.referenceId,
       }));
   };
 
@@ -154,7 +161,7 @@ const HospitalDashboard = () => {
       "O+": "bg-green-100 text-green-800 border-green-300",
       "O-": "bg-green-50 text-green-700 border-green-200",
       "AB+": "bg-purple-100 text-purple-800 border-purple-300",
-      "AB-": "bg-purple-50 text-purple-700 border-purple-200"
+      "AB-": "bg-purple-50 text-purple-700 border-purple-200",
     };
     return colors[bloodType] || "bg-gray-100 text-gray-800 border-gray-300";
   };
@@ -162,21 +169,41 @@ const HospitalDashboard = () => {
   const getStockStatus = (quantity, expiryDate) => {
     const today = new Date();
     const expiry = new Date(expiryDate);
-    
+
     if (expiry <= today) {
-      return { status: "expired", color: "bg-red-100 text-red-800", icon: AlertTriangle };
+      return {
+        status: "expired",
+        color: "bg-red-100 text-red-800",
+        icon: AlertTriangle,
+      };
     }
-    
+
     const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-    
+
     if (daysUntilExpiry <= 3) {
-      return { status: "critical", color: "bg-red-100 text-red-800", icon: AlertTriangle };
+      return {
+        status: "critical",
+        color: "bg-red-100 text-red-800",
+        icon: AlertTriangle,
+      };
     } else if (daysUntilExpiry <= 7) {
-      return { status: "warning", color: "bg-yellow-100 text-yellow-800", icon: AlertTriangle };
+      return {
+        status: "warning",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: AlertTriangle,
+      };
     } else if (quantity < 5) {
-      return { status: "low", color: "bg-orange-100 text-orange-800", icon: AlertTriangle };
+      return {
+        status: "low",
+        color: "bg-orange-100 text-orange-800",
+        icon: AlertTriangle,
+      };
     } else {
-      return { status: "good", color: "bg-green-100 text-green-800", icon: CheckCircle };
+      return {
+        status: "good",
+        color: "bg-green-100 text-green-800",
+        icon: CheckCircle,
+      };
     }
   };
 
@@ -186,7 +213,9 @@ const HospitalDashboard = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-            <span className="ml-3 text-gray-600">Loading hospital dashboard...</span>
+            <span className="ml-3 text-gray-600">
+              Loading hospital dashboard...
+            </span>
           </div>
         </div>
       </div>
@@ -198,8 +227,12 @@ const HospitalDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
         <div className="max-w-7xl mx-auto text-center py-12">
           <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Failed to load hospital data</h2>
-          <p className="text-gray-600 mb-4">Please try refreshing the page or contact support.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Failed to load hospital data
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Please try refreshing the page or contact support.
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto"
@@ -220,8 +253,12 @@ const HospitalDashboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Hospital Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's your hospital overview.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Hospital Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Welcome back! Here's your hospital overview.
+          </p>
         </div>
 
         {/* Hospital Profile Card */}
@@ -234,22 +271,25 @@ const HospitalDashboard = () => {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-800">{hospital.name}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-800">
+                    {hospital.name}
+                  </h2>
                   <p className="text-gray-500">{hospital.email}</p>
-                  
+
                   <div className="flex flex-wrap gap-4 mt-3">
                     <p className="text-gray-600 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-red-500" />
                       {hospital.address}
                     </p>
-                    
+
                     <p className="text-gray-600 flex items-center gap-2">
                       <Phone className="w-4 h-4 text-red-500" />
                       {hospital.phone}
                     </p>
 
                     <p className="text-gray-600">
-                      Category: <span className="font-medium">{hospital.category}</span>
+                      Category:{" "}
+                      <span className="font-medium">{hospital.category}</span>
                     </p>
                   </div>
                 </div>
@@ -260,7 +300,10 @@ const HospitalDashboard = () => {
                     {hospital.status?.toUpperCase() || "ACTIVE"}
                   </div>
                   <p className="text-sm text-gray-500 mt-2">
-                    Last Login: {hospital.lastLogin ? new Date(hospital.lastLogin).toLocaleString() : "Never"}
+                    Last Login:{" "}
+                    {hospital.lastLogin
+                      ? new Date(hospital.lastLogin).toLocaleString()
+                      : "Never"}
                   </p>
                 </div>
               </div>
@@ -274,7 +317,9 @@ const HospitalDashboard = () => {
             <div className="flex items-center gap-3">
               <Droplet className="w-8 h-8 text-blue-600" />
               <div>
-                <div className="text-2xl font-bold text-gray-800">{stats.totalUnits}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {stats.totalUnits}
+                </div>
                 <div className="text-sm text-gray-600">Total Blood Units</div>
               </div>
             </div>
@@ -284,7 +329,9 @@ const HospitalDashboard = () => {
             <div className="flex items-center gap-3">
               <Activity className="w-8 h-8 text-green-600" />
               <div>
-                <div className="text-2xl font-bold text-green-600">{bloodStock.length}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {bloodStock.length}
+                </div>
                 <div className="text-sm text-gray-600">Blood Types</div>
               </div>
             </div>
@@ -294,7 +341,9 @@ const HospitalDashboard = () => {
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-yellow-600" />
               <div>
-                <div className="text-2xl font-bold text-yellow-600">{stats.lowStock}</div>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {stats.lowStock}
+                </div>
                 <div className="text-sm text-gray-600">Low Stock</div>
               </div>
             </div>
@@ -304,7 +353,9 @@ const HospitalDashboard = () => {
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-red-600" />
               <div>
-                <div className="text-2xl font-bold text-red-600">{stats.expiringSoon}</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {stats.expiringSoon}
+                </div>
                 <div className="text-sm text-gray-600">Expiring Soon</div>
               </div>
             </div>
@@ -314,7 +365,9 @@ const HospitalDashboard = () => {
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-purple-600" />
               <div>
-                <div className="text-2xl font-bold text-purple-600">{stats.pendingRequests}</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {stats.pendingRequests}
+                </div>
                 <div className="text-sm text-gray-600">Pending Requests</div>
               </div>
             </div>
@@ -328,13 +381,17 @@ const HospitalDashboard = () => {
               <Droplet className="w-5 h-5 text-red-600" />
               Blood Inventory
             </h3>
-            
+
             {bloodStock.length === 0 ? (
               <div className="text-center py-8">
                 <Droplet className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-4">No blood inventory available</p>
+                <p className="text-gray-600 mb-4">
+                  No blood inventory available
+                </p>
                 <button
-                  onClick={() => window.location.href = '/hospital/request-blood'}
+                  onClick={() =>
+                    (window.location.href = "/hospital/request-blood")
+                  }
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                 >
                   Request Blood
@@ -345,26 +402,42 @@ const HospitalDashboard = () => {
                 {bloodStock.slice(0, 6).map((item) => {
                   const status = getStockStatus(item.quantity, item.expiryDate);
                   const StatusIcon = status.icon;
-                  
+
                   return (
-                    <div key={item._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div
+                      key={item._id}
+                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBloodTypeColor(item.bloodGroup)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getBloodTypeColor(item.bloodGroup)}`}
+                        >
                           {item.bloodGroup}
                         </span>
-                        <span className="text-lg font-semibold">{item.quantity} units</span>
+                        <span className="text-lg font-semibold">
+                          {item.quantity} units
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusIcon size={16} className={status.color.replace('bg-', 'text-').split(' ')[0]} />
-                        <span className="text-sm text-gray-600 capitalize">{status.status}</span>
+                        <StatusIcon
+                          size={16}
+                          className={
+                            status.color.replace("bg-", "text-").split(" ")[0]
+                          }
+                        />
+                        <span className="text-sm text-gray-600 capitalize">
+                          {status.status}
+                        </span>
                       </div>
                     </div>
                   );
                 })}
-                
+
                 {bloodStock.length > 6 && (
                   <button
-                    onClick={() => window.location.href = '/hospital/blood-stock'}
+                    onClick={() =>
+                      (window.location.href = "/hospital/blood-stock")
+                    }
                     className="w-full text-center text-red-600 hover:text-red-700 py-2 border border-dashed border-gray-300 rounded-lg"
                   >
                     View All {bloodStock.length} Blood Types
@@ -380,7 +453,7 @@ const HospitalDashboard = () => {
               <Activity className="w-5 h-5 text-red-600" />
               Recent Blood Requests
             </h3>
-            
+
             {requests.length === 0 ? (
               <div className="text-center py-8">
                 <Activity className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -389,26 +462,38 @@ const HospitalDashboard = () => {
             ) : (
               <div className="space-y-3">
                 {requests.slice(0, 5).map((request) => (
-                  <div key={request._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                  <div
+                    key={request._id}
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                  >
                     <div>
-                      <div className="font-medium text-gray-800">{request.bloodType}</div>
+                      <div className="font-medium text-gray-800">
+                        {request.bloodType}
+                      </div>
                       <div className="text-sm text-gray-600">
-                        {request.units} units • {request.labId?.name || 'Unknown Lab'}
+                        {request.units} units •{" "}
+                        {request.labId?.name || "Unknown Lab"}
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      request.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                      request.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        request.status === "accepted"
+                          ? "bg-green-100 text-green-800"
+                          : request.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
                       {request.status}
                     </span>
                   </div>
                 ))}
-                
+
                 {requests.length > 5 && (
                   <button
-                    onClick={() => window.location.href = '/hospital/request-history'}
+                    onClick={() =>
+                      (window.location.href = "/hospital/request-history")
+                    }
                     className="w-full text-center text-red-600 hover:text-red-700 py-2 border border-dashed border-gray-300 rounded-lg"
                   >
                     View All {requests.length} Requests
@@ -426,15 +511,22 @@ const HospitalDashboard = () => {
               <Clock className="w-5 h-5 text-red-600" />
               Recent Logins
             </h3>
-            
+
             {loginHistory.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No login history available</p>
+              <p className="text-gray-500 text-center py-4">
+                No login history available
+              </p>
             ) : (
               <div className="space-y-3">
                 {loginHistory.map((login, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
+                  >
                     <div>
-                      <div className="font-medium text-gray-800">{login.ip}</div>
+                      <div className="font-medium text-gray-800">
+                        {login.ip}
+                      </div>
                       <div className="text-sm text-gray-600">
                         {new Date(login.date).toLocaleString()}
                       </div>
@@ -452,22 +544,29 @@ const HospitalDashboard = () => {
               <History className="w-5 h-5 text-red-600" />
               Recent Activity
             </h3>
-            
+
             {recentActivity.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No recent activity</p>
+              <p className="text-gray-500 text-center py-4">
+                No recent activity
+              </p>
             ) : (
               <div className="space-y-3">
                 {recentActivity.map((activity, index) => (
-                  <div key={index} className="p-3 border border-gray-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="p-3 border border-gray-200 rounded-lg"
+                  >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium text-gray-800 capitalize">
-                        {activity.eventType?.toLowerCase().replace('_', ' ')}
+                        {activity.eventType?.toLowerCase().replace("_", " ")}
                       </span>
                       <span className="text-sm text-gray-500">
                         {new Date(activity.date).toLocaleDateString()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{activity.description}</p>
+                    <p className="text-sm text-gray-600">
+                      {activity.description}
+                    </p>
                   </div>
                 ))}
               </div>

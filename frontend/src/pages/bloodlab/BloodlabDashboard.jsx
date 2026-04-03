@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = "/api/blood-lab";
+const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/blood-lab`;
 
 const BloodLabDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
@@ -54,7 +54,7 @@ const BloodLabDashboard = () => {
             console.error(
               "❌ Dashboard API Error:",
               err.response?.status,
-              err.message
+              err.message,
             );
             throw err;
           }),
@@ -66,7 +66,7 @@ const BloodLabDashboard = () => {
             console.error(
               "❌ Stock API Error:",
               err.response?.status,
-              err.message
+              err.message,
             );
             throw err;
           }),
@@ -79,7 +79,7 @@ const BloodLabDashboard = () => {
             console.error(
               "❌ History API Error:",
               err.response?.status,
-              err.message
+              err.message,
             );
             // Fallback to dashboard if history endpoint doesn't exist
             return axios.get(`${API_URL}/dashboard`, {
@@ -121,7 +121,7 @@ const BloodLabDashboard = () => {
       console.log("🏢 Setting lab data (from dashboard):", facilityProfile);
       console.log(
         "📚 Setting history data (from history endpoint/fallback):",
-        historyData
+        historyData,
       );
 
       setLab({
@@ -190,10 +190,10 @@ const BloodLabDashboard = () => {
 
   const totalUnits = stock.reduce(
     (sum, blood) => sum + (blood.quantity || 0),
-    0
+    0,
   );
   const criticalStock = stock.filter(
-    (blood) => (blood.quantity || 0) < 10
+    (blood) => (blood.quantity || 0) < 10,
   ).length;
 
   console.log("🧮 Calculated metrics:", {
@@ -213,8 +213,6 @@ const BloodLabDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
-      
-
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
         <div>
@@ -571,8 +569,8 @@ const CampCard = ({ camp }) => (
           camp.status === "Upcoming"
             ? "bg-yellow-100 text-yellow-700"
             : camp.status === "Completed"
-            ? "bg-green-100 text-green-700"
-            : "bg-gray-100 text-gray-600"
+              ? "bg-green-100 text-green-700"
+              : "bg-gray-100 text-gray-600"
         }`}
       >
         {camp.status}

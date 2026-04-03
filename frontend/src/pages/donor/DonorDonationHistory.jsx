@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = "/api/donor";
+const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
 
 const DonorDonationHistory = () => {
   const [history, setHistory] = useState([]);
@@ -61,7 +61,7 @@ const DonorDonationHistory = () => {
       data.sort(
         (a, b) =>
           new Date(b.donationDate || b.date) -
-          new Date(a.donationDate || a.date)
+          new Date(a.donationDate || a.date),
       );
 
       setHistory(data);
@@ -83,7 +83,7 @@ const DonorDonationHistory = () => {
     const totalDonations = data.length;
     const totalUnits = data.reduce(
       (sum, item) => sum + (item.quantity || 1),
-      0
+      0,
     );
     const lifeImpact = totalUnits * 3; // Each unit can save up to 3 lives
     const lastDonation =
@@ -98,7 +98,7 @@ const DonorDonationHistory = () => {
 
     const favoriteFacility = Object.keys(facilityCount).reduce(
       (a, b) => (facilityCount[a] > facilityCount[b] ? a : b),
-      "None"
+      "None",
     );
 
     setStats({
@@ -164,7 +164,7 @@ const DonorDonationHistory = () => {
         (item) =>
           item.facility?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.bloodGroup?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.city?.toLowerCase().includes(searchTerm.toLowerCase())
+          item.city?.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -206,7 +206,7 @@ const DonorDonationHistory = () => {
         item.bloodGroup || "N/A",
         item.quantity || 1,
         "Completed",
-      ].join(",")
+      ].join(","),
     );
 
     const csv = [headers.join(","), ...csvData].join("\n");

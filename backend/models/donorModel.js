@@ -69,9 +69,9 @@ const donorSchema = new mongoose.Schema(
       min: [45, "Minimum weight should be 45kg to donate blood"],
     },
     lastDonationDate: { type: Date }, // Automatically updated by history entry
-    
+
     // This field can be used for manual/medical override, separate from the 90-day cooldown calculated by the virtual
-    eligibleToDonate: { type: Boolean, default: true }, 
+    eligibleToDonate: { type: Boolean, default: true },
 
     // 🧾 Documents (optional for verification)
     idProof: {
@@ -107,17 +107,17 @@ const donorSchema = new mongoose.Schema(
 // 🔐 Pre-save hook: Hash password before saving if it's new or modified
 donorSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  
+
   // Use a consistent salt round value (e.g., 12)
   const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password.trim(), salt);
   next();
 });
 
 // 🧠 Instance Method: Compare password
 donorSchema.methods.comparePassword = async function (candidatePassword) {
   // Compares the given password with the hashed password stored in the database
-  return await bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword.trim(), this.password);
 };
 
 // 🧩 Virtual: Calculate 90-day donation eligibility based on last donation date

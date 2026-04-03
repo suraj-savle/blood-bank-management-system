@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
-
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -28,19 +27,31 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/login`;
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      // Handle non-JSON responses (like 404 HTML pages)
+      let data = {};
+      const contentType = res.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        data = await res.json();
+      } else if (!res.ok) {
+        // Server returned an error but not JSON
+        data = { message: `Server error: ${res.status}` };
+      }
+
       console.log("Login response:", data);
 
       if (!res.ok) {
         // 🔒 Handle facility waiting approval or rejected cases
         if (data.message?.includes("awaiting admin approval")) {
-          setError("Your account is awaiting admin approval. Please wait for confirmation.");
+          setError(
+            "Your account is awaiting admin approval. Please wait for confirmation.",
+          );
           return;
         }
         if (data.message?.includes("rejected")) {
@@ -62,12 +73,12 @@ export default function Login() {
         (role === "donor"
           ? "/donor"
           : role === "hospital"
-          ? "/hospital"
-          : role === "blood-lab"
-          ? "/lab"
-          : role === "admin"
-          ? "/admin"
-          : "/");
+            ? "/hospital"
+            : role === "blood-lab"
+              ? "/lab"
+              : role === "admin"
+                ? "/admin"
+                : "/");
 
       // ✅ Navigate to the dashboard or home
       navigate(targetPath, { replace: true });
@@ -148,10 +159,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-gray-600 text-sm">
           Don't have an account?{" "}
-          <a
-            href="/"
-            className="text-red-600 font-medium hover:underline"
-          >
+          <a href="/" className="text-red-600 font-medium hover:underline">
             Register
           </a>
         </p>

@@ -85,9 +85,24 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: User,
       items: [
         { path: "/donor", label: "Dashboard", icon: BarChart3, badge: null },
-        { path: "/donor/profile", label: "My Profile", icon: User, badge: null },
-        { path: "/donor/history", label: "Donation History", icon: History, badge: null },
-        { path: "/donor/camps", label: "Blood Camps", icon: Calendar, badge: null },
+        {
+          path: "/donor/profile",
+          label: "My Profile",
+          icon: User,
+          badge: null,
+        },
+        {
+          path: "/donor/history",
+          label: "Donation History",
+          icon: History,
+          badge: null,
+        },
+        {
+          path: "/donor/camps",
+          label: "Blood Camps",
+          icon: Calendar,
+          badge: null,
+        },
       ],
     },
     hospital: {
@@ -97,10 +112,25 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: Building,
       items: [
         { path: "/hospital", label: "Dashboard", icon: BarChart3, badge: null },
-        { path: "/hospital/blood-request-create", label: "Blood Requests", icon: ClipboardList, badge: null },
-        { path: "/hospital/inventory", label: "Inventory", icon: Droplet, badge: null },
+        {
+          path: "/hospital/blood-request-create",
+          label: "Blood Requests",
+          icon: ClipboardList,
+          badge: null,
+        },
+        {
+          path: "/hospital/inventory",
+          label: "Inventory",
+          icon: Droplet,
+          badge: null,
+        },
         { path: "/hospital/donors", label: "Donors", icon: User, badge: null },
-        { path: "/hospital/blood-request-history", label: "History", icon: Ambulance, badge: null },
+        {
+          path: "/hospital/blood-request-history",
+          label: "History",
+          icon: Ambulance,
+          badge: null,
+        },
       ],
     },
     blood_lab: {
@@ -110,11 +140,26 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: TestTube,
       items: [
         { path: "/lab", label: "Dashboard", icon: BarChart3, badge: null },
-        { path: "/lab/inventory", label: "Inventory", icon: Droplet, badge: null },
+        {
+          path: "/lab/inventory",
+          label: "Inventory",
+          icon: Droplet,
+          badge: null,
+        },
         { path: "/lab/Donor", label: "Donors", icon: User, badge: null },
         { path: "/lab/camps", label: "Camps", icon: Calendar, badge: null },
-        { path: "/lab/requests", label: "Requests", icon: ClipboardList, badge: null },
-        { path: "/lab/profile", label: "Profile", icon: CheckCircle, badge: null },
+        {
+          path: "/lab/requests",
+          label: "Requests",
+          icon: ClipboardList,
+          badge: null,
+        },
+        {
+          path: "/lab/profile",
+          label: "Profile",
+          icon: CheckCircle,
+          badge: null,
+        },
       ],
     },
     admin: {
@@ -124,8 +169,18 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       icon: Shield,
       items: [
         { path: "/admin", label: "Overview", icon: BarChart3, badge: null },
-        { path: "/admin/verification", label: "Verification", icon: Shield, badge: null },
-        { path: "/admin/facilities", label: "Facilities", icon: Building, badge: null },
+        {
+          path: "/admin/verification",
+          label: "Verification",
+          icon: Shield,
+          badge: null,
+        },
+        {
+          path: "/admin/facilities",
+          label: "Facilities",
+          icon: Building,
+          badge: null,
+        },
         { path: "/admin/donors", label: "Donors", icon: User, badge: null },
       ],
     },
@@ -143,9 +198,12 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       // Simple implementation of retries for robustness
       const maxRetries = 3;
       let attempt = 0;
-      
+
       while (attempt < maxRetries) {
         try {
+
+          const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/profile`;
+          const res = await fetch(apiUrl, {
           const res = await fetch("/api/auth/profile", {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -155,11 +213,13 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             const user = data.user;
 
             if (!user) {
-                throw new Error("User data structure invalid.");
+              throw new Error("User data structure invalid.");
             }
 
             if (user.role.toLowerCase() !== userRole.toLowerCase()) {
-              console.error(`Role mismatch: expected ${userRole}, got ${user.role}`);
+              console.error(
+                `Role mismatch: expected ${userRole}, got ${user.role}`,
+              );
               localStorage.removeItem("token");
               navigate("/login");
               return;
@@ -168,7 +228,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             setUserData(user);
             setIsLoading(false); // Success
             return;
-
           } else if (res.status === 401 || res.status === 403) {
             // Unauthorized/Forbidden
             console.error("Authentication failed or token expired.");
@@ -178,13 +237,18 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             return;
           }
         } catch (error) {
-          console.error(`Attempt ${attempt + 1}: Failed to fetch user data.`, error);
+          console.error(
+            `Attempt ${attempt + 1}: Failed to fetch user data.`,
+            error,
+          );
         }
 
         // Prepare for retry with exponential backoff (e.g., 1s, 2s, 4s)
         attempt++;
         if (attempt < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, attempt) * 1000),
+          );
         }
       }
 
@@ -203,10 +267,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       setIsScrolled(window.scrollY > 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
 
   const normalizedRole = userRole?.toLowerCase().replace("-", "_");
   const config = menuConfig[normalizedRole] || {
@@ -222,9 +285,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     navigate("/login");
   };
 
-  
-
-
   const getBadgeColor = (badge) => {
     if (badge === "New") return "bg-green-500 text-white";
     if (badge === "Low") return "bg-red-500 text-white";
@@ -237,7 +297,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center">
           <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-          <p className="mt-4 text-gray-600 font-semibold">Loading Dashboard...</p>
+          <p className="mt-4 text-gray-600 font-semibold">
+            Loading Dashboard...
+          </p>
         </div>
       </div>
     );
@@ -248,7 +310,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       {/* HEADER */}
       <header
         className={`flex justify-between items-center bg-white/95 backdrop-blur-md shadow-sm border-b border-red-100 px-4 sm:px-6 py-3 sticky top-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'shadow-lg' : 'shadow-sm'
+          isScrolled ? "shadow-lg" : "shadow-sm"
         }`}
         style={{
           background: `linear-gradient(135deg, ${theme.primary[50]} 0%, white 50%, ${theme.primary[50]} 100%)`,
@@ -263,22 +325,31 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          
+
           {/* Logo and Title */}
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-red-100 shadow-sm">
               <ClipboardPlus size={20} className="text-red-600" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl font-bold" style={{ color: theme.primary[700] }}>
+              <h1
+                className="text-lg sm:text-xl font-bold"
+                style={{ color: theme.primary[700] }}
+              >
                 {config.title}
               </h1>
-              <p className="text-xs sm:text-sm" style={{ color: theme.secondary[500] }}>
+              <p
+                className="text-xs sm:text-sm"
+                style={{ color: theme.secondary[500] }}
+              >
                 {config.subtitle}
               </p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-lg font-bold" style={{ color: theme.primary[700] }}>
+              <h1
+                className="text-lg font-bold"
+                style={{ color: theme.primary[700] }}
+              >
                 {config.shortTitle}
               </h1>
             </div>
@@ -287,7 +358,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4">
-         
           {/* User Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div
@@ -296,13 +366,21 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 background: `linear-gradient(135deg, ${theme.primary[500]}, ${theme.primary[600]})`,
               }}
             >
-              {userData?.name?.charAt(0)?.toUpperCase() || userData?.fullName?.charAt(0)?.toUpperCase() || "U"}
+              {userData?.name?.charAt(0)?.toUpperCase() ||
+                userData?.fullName?.charAt(0)?.toUpperCase() ||
+                "U"}
             </div>
             <div className="hidden sm:block text-right">
-              <span className="font-medium block text-sm" style={{ color: theme.primary[700] }}>
+              <span
+                className="font-medium block text-sm"
+                style={{ color: theme.primary[700] }}
+              >
                 {userData?.name || userData.fullName || "User"}
               </span>
-              <span className="text-xs capitalize" style={{ color: theme.secondary[500] }}>
+              <span
+                className="text-xs capitalize"
+                style={{ color: theme.secondary[500] }}
+              >
                 {userRole.replace("_", " ")}
               </span>
             </div>
@@ -341,10 +419,16 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                   <config.icon size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-sm" style={{ color: theme.primary[700] }}>
+                  <h2
+                    className="font-bold text-sm"
+                    style={{ color: theme.primary[700] }}
+                  >
                     {config.shortTitle}
                   </h2>
-                  <p className="text-xs" style={{ color: theme.secondary[500] }}>
+                  <p
+                    className="text-xs"
+                    style={{ color: theme.secondary[500] }}
+                  >
                     Portal
                   </p>
                 </div>
@@ -355,7 +439,11 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               className="hidden lg:flex p-1.5 rounded-lg hover:bg-red-100 transition-colors"
               style={{ color: theme.primary[600] }}
             >
-              {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              {sidebarCollapsed ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronLeft size={16} />
+              )}
             </button>
           </div>
 
@@ -377,7 +465,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                         ? "shadow-md font-semibold transform scale-[1.02]"
                         : "hover:shadow-md hover:transform hover:scale-[1.02] hover:bg-red-50"
                     } ${
-                      isActive ? "text-white" : "text-gray-700 hover:text-red-700"
+                      isActive
+                        ? "text-white"
+                        : "text-gray-700 hover:text-red-700"
                     }`}
                     style={{
                       background: isActive
@@ -409,7 +499,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                     )}
                     {sidebarCollapsed && item.badge && (
                       <span
-                        className={`absolute top-1 right-1 w-2 h-2 rounded-full ${getBadgeColor(item.badge).replace('text-white', '')}`}
+                        className={`absolute top-1 right-1 w-2 h-2 rounded-full ${getBadgeColor(item.badge).replace("text-white", "")}`}
                       />
                     )}
                     {sidebarCollapsed && (
@@ -440,7 +530,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 }}
               >
                 <p className="text-sm font-semibold">Blood Bank MS</p>
-                <p className="text-xs mt-1 opacity-75">Save Lives, Donate Blood</p>
+                <p className="text-xs mt-1 opacity-75">
+                  Save Lives, Donate Blood
+                </p>
               </div>
             </div>
           )}
@@ -478,11 +570,11 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 flex-1 mx-1 ${
-                  isActive ? 'bg-red-50 text-red-600' : 'text-gray-600'
+                  isActive ? "bg-red-50 text-red-600" : "text-gray-600"
                 }`}
               >
                 <Icon size={20} />
-                <span className="text-xs mt-1">{item.label.split(' ')[0]}</span>
+                <span className="text-xs mt-1">{item.label.split(" ")[0]}</span>
               </button>
             );
           })}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import {
   User,
   Heart,
@@ -17,27 +17,27 @@ import {
   Filter,
   Search,
   ChevronDown,
-  ChevronUp
-} from 'lucide-react';
+  ChevronUp,
+} from "lucide-react";
 
-const API_URL = "/api/admin";
+const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/admin`;
 
 function GetAllDonors() {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filters, setFilters] = useState({
-    search: '',
-    bloodGroup: 'all',
-    eligibility: 'all',
-    sortBy: 'name',
-    sortOrder: 'asc'
+    search: "",
+    bloodGroup: "all",
+    eligibility: "all",
+    sortBy: "name",
+    sortOrder: "asc",
   });
 
   const token = localStorage.getItem("token");
 
   // Blood groups for filter
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   // Fetch Donors Function
   const fetchAllDonors = async (showToast = false) => {
@@ -46,11 +46,11 @@ function GetAllDonors() {
       else setLoading(true);
 
       console.log("🔄 Fetching donors...");
-      
+
       const res = await fetch(`${API_URL}/donors`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       });
 
@@ -84,33 +84,36 @@ function GetAllDonors() {
 
   // Filter and sort donors
   const filteredDonors = donors
-    .filter(donor => {
-      const matchesSearch = !filters.search || 
+    .filter((donor) => {
+      const matchesSearch =
+        !filters.search ||
         donor.fullName?.toLowerCase().includes(filters.search.toLowerCase()) ||
         donor.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
         donor.phone?.includes(filters.search);
-      
-      const matchesBloodGroup = filters.bloodGroup === 'all' || donor.bloodGroup === filters.bloodGroup;
-      
-      const matchesEligibility = filters.eligibility === 'all' || 
-        (filters.eligibility === 'eligible' && donor.eligibleToDonate) ||
-        (filters.eligibility === 'ineligible' && !donor.eligibleToDonate);
-      
+
+      const matchesBloodGroup =
+        filters.bloodGroup === "all" || donor.bloodGroup === filters.bloodGroup;
+
+      const matchesEligibility =
+        filters.eligibility === "all" ||
+        (filters.eligibility === "eligible" && donor.eligibleToDonate) ||
+        (filters.eligibility === "ineligible" && !donor.eligibleToDonate);
+
       return matchesSearch && matchesBloodGroup && matchesEligibility;
     })
     .sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (filters.sortBy) {
-        case 'name':
+        case "name":
           aValue = a.fullName?.toLowerCase();
           bValue = b.fullName?.toLowerCase();
           break;
-        case 'donations':
+        case "donations":
           aValue = a.donationHistory?.length || 0;
           bValue = b.donationHistory?.length || 0;
           break;
-        case 'age':
+        case "age":
           aValue = a.age || 0;
           bValue = b.age || 0;
           break;
@@ -118,8 +121,8 @@ function GetAllDonors() {
           aValue = a.fullName?.toLowerCase();
           bValue = b.fullName?.toLowerCase();
       }
-      
-      if (filters.sortOrder === 'desc') {
+
+      if (filters.sortOrder === "desc") {
         return aValue < bValue ? 1 : -1;
       }
       return aValue > bValue ? 1 : -1;
@@ -135,11 +138,13 @@ function GetAllDonors() {
       );
     }
     return (
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
-        isEligible
-          ? "bg-green-100 text-green-800 border-green-200"
-          : "bg-red-100 text-red-800 border-red-200"
-      }`}>
+      <span
+        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
+          isEligible
+            ? "bg-green-100 text-green-800 border-green-200"
+            : "bg-red-100 text-red-800 border-red-200"
+        }`}
+      >
         {isEligible ? <CheckCircle size={12} /> : <XCircle size={12} />}
         {isEligible ? "Eligible" : "Ineligible"}
       </span>
@@ -165,7 +170,9 @@ function GetAllDonors() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
             Loading Donor Database
           </h2>
-          <p className="text-gray-500">Fetching all registered blood donors...</p>
+          <p className="text-gray-500">
+            Fetching all registered blood donors...
+          </p>
         </div>
       </div>
     );
@@ -174,7 +181,6 @@ function GetAllDonors() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
       <div className="max-w-7xl mx-auto">
-        
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
@@ -183,20 +189,24 @@ function GetAllDonors() {
                 <Users className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Blood Donors</h1>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  Blood Donors
+                </h1>
                 <p className="text-gray-600 mt-1">
                   Manage and view all registered blood donors in the system
                 </p>
               </div>
             </div>
-            
+
             <button
               onClick={() => fetchAllDonors(true)}
               disabled={refreshing}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+              <RefreshCw
+                className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              {refreshing ? "Refreshing..." : "Refresh Data"}
             </button>
           </div>
 
@@ -204,24 +214,29 @@ function GetAllDonors() {
           <div className="bg-white rounded-2xl shadow-lg border border-red-100 p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-800">{donors.length}</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {donors.length}
+                </div>
                 <div className="text-sm text-gray-600">Total Donors</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {donors.filter(d => d.eligibleToDonate).length}
+                  {donors.filter((d) => d.eligibleToDonate).length}
                 </div>
                 <div className="text-sm text-gray-600">Eligible</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
-                  {donors.filter(d => !d.eligibleToDonate).length}
+                  {donors.filter((d) => !d.eligibleToDonate).length}
                 </div>
                 <div className="text-sm text-gray-600">Ineligible</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {donors.reduce((sum, donor) => sum + (donor.donationHistory?.length || 0), 0)}
+                  {donors.reduce(
+                    (sum, donor) => sum + (donor.donationHistory?.length || 0),
+                    0,
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">Total Donations</div>
               </div>
@@ -234,56 +249,75 @@ function GetAllDonors() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
                 <input
                   type="text"
                   placeholder="Search donors by name, email, or phone..."
                   value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, search: e.target.value }))
+                  }
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
             </div>
-            
+
             <select
               value={filters.bloodGroup}
-              onChange={(e) => setFilters(prev => ({ ...prev, bloodGroup: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, bloodGroup: e.target.value }))
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="all">All Blood Types</option>
-              {bloodGroups.map(group => (
-                <option key={group} value={group}>{group}</option>
+              {bloodGroups.map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
               ))}
             </select>
-            
+
             <select
               value={filters.eligibility}
-              onChange={(e) => setFilters(prev => ({ ...prev, eligibility: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, eligibility: e.target.value }))
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="all">All Status</option>
               <option value="eligible">Eligible Only</option>
               <option value="ineligible">Ineligible Only</option>
             </select>
-            
+
             <select
               value={filters.sortBy}
-              onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, sortBy: e.target.value }))
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
               <option value="name">Sort by Name</option>
               <option value="donations">Sort by Donations</option>
               <option value="age">Sort by Age</option>
             </select>
-            
+
             <button
-              onClick={() => setFilters(prev => ({ 
-                ...prev, 
-                sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc' 
-              }))}
+              onClick={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
+                }))
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
-              {filters.sortOrder === 'asc' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              {filters.sortOrder === "asc" ? (
+                <ChevronUp size={18} />
+              ) : (
+                <ChevronDown size={18} />
+              )}
             </button>
           </div>
         </div>
@@ -305,16 +339,16 @@ function GetAllDonors() {
           <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-red-100">
             <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {donors.length === 0 ? 'No Donors Found' : 'No Matching Donors'}
+              {donors.length === 0 ? "No Donors Found" : "No Matching Donors"}
             </h3>
             <p className="text-gray-600">
-              {donors.length === 0 
-                ? 'The blood donor database is currently empty.' 
-                : 'No donors match your current filters.'}
+              {donors.length === 0
+                ? "The blood donor database is currently empty."
+                : "No donors match your current filters."}
             </p>
             {filters.search && (
               <button
-                onClick={() => setFilters(prev => ({ ...prev, search: '' }))}
+                onClick={() => setFilters((prev) => ({ ...prev, search: "" }))}
                 className="mt-4 text-red-600 hover:text-red-700 underline"
               >
                 Clear search
@@ -346,9 +380,11 @@ function GetAllDonors() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
                     <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span className="text-gray-700">{donor.phone || 'Not provided'}</span>
+                    <span className="text-gray-700">
+                      {donor.phone || "Not provided"}
+                    </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 text-sm">
                     <Calendar className="w-4 h-4 text-red-500 flex-shrink-0" />
                     <span className="text-gray-700">{donor.age} years old</span>
@@ -356,13 +392,16 @@ function GetAllDonors() {
 
                   <div className="flex items-center gap-3 text-sm">
                     <Weight className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span className="text-gray-700">{donor.weight || 'N/A'} kg</span>
+                    <span className="text-gray-700">
+                      {donor.weight || "N/A"} kg
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-3 text-sm">
                     <Heart className="w-4 h-4 text-red-500 flex-shrink-0" />
                     <span className="text-gray-700">
-                      {donor.donationHistory?.length || 0} donation{(donor.donationHistory?.length || 0) !== 1 ? 's' : ''}
+                      {donor.donationHistory?.length || 0} donation
+                      {(donor.donationHistory?.length || 0) !== 1 ? "s" : ""}
                     </span>
                   </div>
 

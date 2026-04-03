@@ -142,13 +142,12 @@ facilitySchema.pre("save", function (next) {
   next();
 });
 
-//
 // 🔐 Hash password before save
 //
 facilitySchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password.trim(), salt);
   next();
 });
 
@@ -156,7 +155,7 @@ facilitySchema.pre("save", async function (next) {
 // 🧠 Compare password
 //
 facilitySchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword.trim(), this.password);
 };
 
 export default mongoose.model("Facility", facilitySchema);
