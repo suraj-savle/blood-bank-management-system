@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { 
-  Droplets, 
-  PlusCircle, 
-  MinusCircle, 
-  RefreshCw, 
+import {
+  Droplets,
+  PlusCircle,
+  MinusCircle,
+  RefreshCw,
   AlertTriangle,
   Beaker,
-  TrendingDown
+  TrendingDown,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -16,13 +16,13 @@ const BloodStock = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [action, setAction] = useState("add");
-  const [form, setForm] = useState({ 
-    bloodType: "", 
-    quantity: "" 
+  const [form, setForm] = useState({
+    bloodType: "",
+    quantity: "",
   });
 
   const token = localStorage.getItem("token");
-  const API_URL = "/api/blood-lab";
+  const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/blood-lab`;
 
   // Blood types for dropdown
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -31,11 +31,10 @@ const BloodStock = () => {
   const fetchStock = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(
-        `${API_URL}/blood/stock`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console .log("Fetched Stock Data:", data);
+      const { data } = await axios.get(`${API_URL}/blood/stock`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Fetched Stock Data:", data);
       if (data.success) {
         setStock(data.data || []);
       } else {
@@ -43,7 +42,9 @@ const BloodStock = () => {
       }
     } catch (error) {
       console.error("Fetch Stock Error:", error);
-      toast.error(error.response?.data?.message || "Failed to load blood stock");
+      toast.error(
+        error.response?.data?.message || "Failed to load blood stock",
+      );
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ const BloodStock = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!form.bloodType || !form.quantity) {
       toast.error("Please fill all fields");
       return;
@@ -71,13 +72,9 @@ const BloodStock = () => {
 
     try {
       const endpoint = action === "add" ? "/blood/add" : "/blood/remove";
-      const { data } = await axios.post(
-        `${API_URL}${endpoint}`, 
-        form, 
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const { data } = await axios.post(`${API_URL}${endpoint}`, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (data.success) {
         toast.success(data.message);
@@ -89,7 +86,8 @@ const BloodStock = () => {
     } catch (error) {
       console.error("Stock Update Error:", error);
       toast.error(
-        error.response?.data?.message || `Error ${action === "add" ? "adding" : "removing"} blood stock`
+        error.response?.data?.message ||
+          `Error ${action === "add" ? "adding" : "removing"} blood stock`,
       );
     } finally {
       setSubmitting(false);
@@ -97,7 +95,7 @@ const BloodStock = () => {
   };
 
   // Check for low stock items
-  const lowStockItems = stock.filter(item => item.quantity < 10);
+  const lowStockItems = stock.filter((item) => item.quantity < 10);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
@@ -114,14 +112,14 @@ const BloodStock = () => {
             Manage your blood inventory and track stock levels
           </p>
         </div>
-        
+
         <button
           onClick={fetchStock}
           disabled={loading}
           className="mt-4 lg:mt-0 flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Refreshing...' : 'Refresh Stock'}
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          {loading ? "Refreshing..." : "Refresh Stock"}
         </button>
       </div>
 
@@ -132,7 +130,8 @@ const BloodStock = () => {
           <div>
             <p className="font-medium text-amber-800">Low Stock Alert</p>
             <p className="text-amber-600 text-sm">
-              {lowStockItems.length} blood type{lowStockItems.length > 1 ? 's' : ''} have low inventory
+              {lowStockItems.length} blood type
+              {lowStockItems.length > 1 ? "s" : ""} have low inventory
             </p>
           </div>
         </div>
@@ -145,7 +144,10 @@ const BloodStock = () => {
           {action === "add" ? "Add Blood Stock" : "Remove Blood Stock"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-5 gap-4"
+        >
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Blood Type
@@ -211,7 +213,11 @@ const BloodStock = () => {
               ) : (
                 <MinusCircle className="w-4 h-4" />
               )}
-              {submitting ? "Processing..." : action === "add" ? "Add Units" : "Remove Units"}
+              {submitting
+                ? "Processing..."
+                : action === "add"
+                  ? "Add Units"
+                  : "Remove Units"}
             </button>
           </div>
         </form>
@@ -238,34 +244,57 @@ const BloodStock = () => {
           <div className="text-center py-8 text-gray-500">
             <Droplets className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p>No blood stock available.</p>
-            <p className="text-sm">Start by adding some blood units to your inventory.</p>
+            <p className="text-sm">
+              Start by adding some blood units to your inventory.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b">
-                  <th className="text-left p-3 font-medium text-gray-700">Blood Type</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Quantity</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Status</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Expiry Date</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Last Updated</th>
+                  <th className="text-left p-3 font-medium text-gray-700">
+                    Blood Type
+                  </th>
+                  <th className="text-left p-3 font-medium text-gray-700">
+                    Quantity
+                  </th>
+                  <th className="text-left p-3 font-medium text-gray-700">
+                    Status
+                  </th>
+                  <th className="text-left p-3 font-medium text-gray-700">
+                    Expiry Date
+                  </th>
+                  <th className="text-left p-3 font-medium text-gray-700">
+                    Last Updated
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {stock.map((item) => {
                   const isLowStock = item.quantity < 10;
                   const isCritical = item.quantity < 5;
-                  
+
                   return (
-                    <tr key={item._id} className="border-b hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={item._id}
+                      className="border-b hover:bg-gray-50 transition-colors"
+                    >
                       <td className="p-3">
-                        <span className="font-medium text-gray-800">{item.bloodGroup}</span>
+                        <span className="font-medium text-gray-800">
+                          {item.bloodGroup}
+                        </span>
                       </td>
                       <td className="p-3">
-                        <span className={`font-bold ${
-                          isCritical ? 'text-red-600' : isLowStock ? 'text-amber-600' : 'text-gray-800'
-                        }`}>
+                        <span
+                          className={`font-bold ${
+                            isCritical
+                              ? "text-red-600"
+                              : isLowStock
+                                ? "text-amber-600"
+                                : "text-gray-800"
+                          }`}
+                        >
                           {item.quantity} units
                         </span>
                       </td>
@@ -290,7 +319,9 @@ const BloodStock = () => {
                         {new Date(item.expiryDate).toLocaleDateString()}
                       </td>
                       <td className="p-3 text-gray-600">
-                        {new Date(item.updatedAt || item.createdAt).toLocaleDateString()}
+                        {new Date(
+                          item.updatedAt || item.createdAt,
+                        ).toLocaleDateString()}
                       </td>
                     </tr>
                   );

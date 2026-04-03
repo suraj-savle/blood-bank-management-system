@@ -20,11 +20,11 @@ import {
   Share2,
   Filter,
   Search,
-  Bell
+  Bell,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = "/api/donor";
+const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
 
 const DonorDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
@@ -53,9 +53,11 @@ const DonorDashboard = () => {
         axios.get(`${API_URL}/history`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${API_URL}/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => ({ data: {} })), // Fallback if stats endpoint doesn't exist
+        axios
+          .get(`${API_URL}/stats`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() => ({ data: {} })), // Fallback if stats endpoint doesn't exist
       ]);
 
       console.log("✅ API Responses received:");
@@ -81,9 +83,18 @@ const DonorDashboard = () => {
       // Calculate dashboard stats
       const totalDonations = historyData.length;
       const livesImpacted = totalDonations * 3; // Each donation can save up to 3 lives
-      const achievementLevel = totalDonations >= 10 ? "Gold" : totalDonations >= 5 ? "Silver" : "Bronze";
-      const nextMilestone = totalDonations < 5 ? 5 : totalDonations < 10 ? 10 : 15;
-      const completionRate = Math.min(100, (totalDonations / nextMilestone) * 100);
+      const achievementLevel =
+        totalDonations >= 10
+          ? "Gold"
+          : totalDonations >= 5
+            ? "Silver"
+            : "Bronze";
+      const nextMilestone =
+        totalDonations < 5 ? 5 : totalDonations < 10 ? 10 : 15;
+      const completionRate = Math.min(
+        100,
+        (totalDonations / nextMilestone) * 100,
+      );
 
       setDashboard({
         stats: {
@@ -92,14 +103,14 @@ const DonorDashboard = () => {
           achievementLevel,
           nextMilestone,
           completionRate,
-          ...statsRes.data
+          ...statsRes.data,
         },
-        recentActivity: historyData.slice(0, 5)
+        recentActivity: historyData.slice(0, 5),
       });
-
     } catch (error) {
       console.error("🚨 Donor Dashboard Error:", error);
-      const message = error.response?.data?.message || "Failed to load donor dashboard data";
+      const message =
+        error.response?.data?.message || "Failed to load donor dashboard data";
       toast.error(message);
     }
   };
@@ -149,8 +160,12 @@ const DonorDashboard = () => {
   }
 
   const isEligible = donor?.eligibleToDonate || false;
-  const nextDonationDate = donor?.nextEligibleDate ? new Date(donor.nextEligibleDate) : null;
-  const daysUntilEligible = nextDonationDate ? Math.ceil((nextDonationDate - new Date()) / (1000 * 60 * 60 * 24)) : 0;
+  const nextDonationDate = donor?.nextEligibleDate
+    ? new Date(donor.nextEligibleDate)
+    : null;
+  const daysUntilEligible = nextDonationDate
+    ? Math.ceil((nextDonationDate - new Date()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
@@ -173,7 +188,9 @@ const DonorDashboard = () => {
           disabled={refreshing}
           className="mt-4 lg:mt-0 flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+          />
           {refreshing ? "Refreshing..." : "Refresh Data"}
         </button>
       </div>
@@ -183,9 +200,12 @@ const DonorDashboard = () => {
         <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
           <div>
-            <p className="font-medium text-yellow-800">Next Donation Available</p>
+            <p className="font-medium text-yellow-800">
+              Next Donation Available
+            </p>
             <p className="text-yellow-600 text-sm">
-              You can donate again in {daysUntilEligible} day{daysUntilEligible !== 1 ? 's' : ''}
+              You can donate again in {daysUntilEligible} day
+              {daysUntilEligible !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -211,9 +231,13 @@ const DonorDashboard = () => {
               <User className="w-5 h-5 text-red-600" />
               Donor Profile
             </h2>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isEligible ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-            }`}>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                isEligible
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
               {isEligible ? "Eligible" : "Not Eligible"}
             </span>
           </div>
@@ -237,7 +261,7 @@ const DonorDashboard = () => {
             <LabInfo
               icon={<MapPin className="w-4 h-4" />}
               label="Location"
-              value={`${donor.address?.city || 'N/A'}, ${donor.address?.state || 'N/A'}`}
+              value={`${donor.address?.city || "N/A"}, ${donor.address?.state || "N/A"}`}
               truncate
             />
           </div>
@@ -270,8 +294,14 @@ const DonorDashboard = () => {
         <MetricCard
           icon={<Calendar className="w-6 h-6" />}
           label="Next Eligible"
-          value={donor?.nextEligibleDate ? new Date(donor.nextEligibleDate).toLocaleDateString() : "Now"}
-          subtitle={isEligible ? "Ready to donate" : `${daysUntilEligible} days left`}
+          value={
+            donor?.nextEligibleDate
+              ? new Date(donor.nextEligibleDate).toLocaleDateString()
+              : "Now"
+          }
+          subtitle={
+            isEligible ? "Ready to donate" : `${daysUntilEligible} days left`
+          }
           color="blue"
         />
       </div>
@@ -286,7 +316,10 @@ const DonorDashboard = () => {
           {history.length > 0 ? (
             <div className="space-y-3">
               {history.slice(0, 5).map((donation, index) => (
-                <DonationHistoryItem key={donation._id || index} donation={donation} />
+                <DonationHistoryItem
+                  key={donation._id || index}
+                  donation={donation}
+                />
               ))}
             </div>
           ) : (
@@ -294,7 +327,9 @@ const DonorDashboard = () => {
               icon={<Droplet className="w-8 h-8" />}
               message="No donation history yet"
               actionText="Make your first donation"
-              onAction={() => toast.success("Find nearby blood camps to get started!")}
+              onAction={() =>
+                toast.success("Find nearby blood camps to get started!")
+              }
             />
           )}
         </Section>
@@ -380,12 +415,20 @@ const DonorDashboard = () => {
             />
             <HealthStat
               label="Last Donation"
-              value={donor.lastDonationDate ? new Date(donor.lastDonationDate).toLocaleDateString() : "Never"}
+              value={
+                donor.lastDonationDate
+                  ? new Date(donor.lastDonationDate).toLocaleDateString()
+                  : "Never"
+              }
               icon={<Calendar className="w-4 h-4" />}
             />
             <HealthStat
               label="Donor Since"
-              value={donor.createdAt ? new Date(donor.createdAt).getFullYear() : new Date().getFullYear()}
+              value={
+                donor.createdAt
+                  ? new Date(donor.createdAt).getFullYear()
+                  : new Date().getFullYear()
+              }
               icon={<Award className="w-4 h-4" />}
             />
           </div>
@@ -398,23 +441,45 @@ const DonorDashboard = () => {
 // Reusable Components (same as your blood lab dashboard)
 const MetricCard = ({ icon, label, value, subtitle, color, alert = false }) => {
   const colorClasses = {
-    blue: { border: "border-l-blue-400", bg: "bg-blue-100", text: "text-blue-600" },
-    green: { border: "border-l-green-400", bg: "bg-green-100", text: "text-green-600" },
+    blue: {
+      border: "border-l-blue-400",
+      bg: "bg-blue-100",
+      text: "text-blue-600",
+    },
+    green: {
+      border: "border-l-green-400",
+      bg: "bg-green-100",
+      text: "text-green-600",
+    },
     red: { border: "border-l-red-400", bg: "bg-red-100", text: "text-red-600" },
-    purple: { border: "border-l-purple-400", bg: "bg-purple-100", text: "text-purple-600" },
+    purple: {
+      border: "border-l-purple-400",
+      bg: "bg-purple-100",
+      text: "text-purple-600",
+    },
   };
 
   const colors = colorClasses[color] || colorClasses.blue;
 
   return (
-    <div className={`bg-white rounded-xl shadow-lg border-l-4 ${alert ? "border-l-red-400" : colors.border} p-5 relative overflow-hidden`}>
+    <div
+      className={`bg-white rounded-xl shadow-lg border-l-4 ${alert ? "border-l-red-400" : colors.border} p-5 relative overflow-hidden`}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
           <p className="text-2xl font-bold text-gray-800">{value}</p>
-          {subtitle && <p className={`text-xs ${alert ? "text-red-600" : "text-gray-500"} mt-1`}>{subtitle}</p>}
+          {subtitle && (
+            <p
+              className={`text-xs ${alert ? "text-red-600" : "text-gray-500"} mt-1`}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
-        <div className={`p-3 rounded-lg ${alert ? "bg-red-100 text-red-600" : `${colors.bg} ${colors.text}`}`}>
+        <div
+          className={`p-3 rounded-lg ${alert ? "bg-red-100 text-red-600" : `${colors.bg} ${colors.text}`}`}
+        >
           {icon}
         </div>
       </div>
@@ -423,7 +488,9 @@ const MetricCard = ({ icon, label, value, subtitle, color, alert = false }) => {
 };
 
 const Section = ({ title, icon, subtitle, children, className = "" }) => (
-  <div className={`bg-white rounded-2xl shadow-lg border border-red-50 p-6 ${className}`}>
+  <div
+    className={`bg-white rounded-2xl shadow-lg border border-red-50 p-6 ${className}`}
+  >
     <div className="flex items-center justify-between mb-4">
       <div>
         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -455,14 +522,21 @@ const DonationHistoryItem = ({ donation }) => (
         <Droplet className="w-4 h-4" />
       </div>
       <div>
-        <p className="font-medium text-gray-800">{donation.facility || "Blood Donation Camp"}</p>
+        <p className="font-medium text-gray-800">
+          {donation.facility || "Blood Donation Camp"}
+        </p>
         <p className="text-xs text-gray-500">
-          {new Date(donation.donationDate || donation.date).toLocaleDateString()} • {donation.bloodType || donation.bloodGroup}
+          {new Date(
+            donation.donationDate || donation.date,
+          ).toLocaleDateString()}{" "}
+          • {donation.bloodType || donation.bloodGroup}
         </p>
       </div>
     </div>
     <div className="text-right">
-      <span className="font-bold text-gray-800">{donation.quantity || 1} unit</span>
+      <span className="font-bold text-gray-800">
+        {donation.quantity || 1} unit
+      </span>
       <p className="text-xs text-green-600 mt-1">Completed</p>
     </div>
   </div>
@@ -471,8 +545,12 @@ const DonationHistoryItem = ({ donation }) => (
 const ActivityCard = ({ activity }) => (
   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
     <div className="flex-1">
-      <h4 className="font-medium text-gray-800 mb-1">{activity.eventType || "Donation"}</h4>
-      <p className="text-sm text-gray-600">{activity.description || "Blood donation completed"}</p>
+      <h4 className="font-medium text-gray-800 mb-1">
+        {activity.eventType || "Donation"}
+      </h4>
+      <p className="text-sm text-gray-600">
+        {activity.description || "Blood donation completed"}
+      </p>
     </div>
     <div className="text-right">
       <span className="text-xs text-gray-500">
@@ -487,7 +565,8 @@ const ActionCard = ({ icon, title, description, onClick, color = "blue" }) => {
     blue: "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200",
     green: "bg-green-50 text-green-600 hover:bg-green-100 border-green-200",
     red: "bg-red-50 text-red-600 hover:bg-red-100 border-red-200",
-    purple: "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200",
+    purple:
+      "bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200",
   };
 
   return (
@@ -510,9 +589,7 @@ const HealthStat = ({ label, value, icon }) => (
       <p className="text-sm font-medium text-gray-600">{label}</p>
       <p className="text-lg font-bold text-gray-800">{value}</p>
     </div>
-    <div className="p-2 bg-red-100 rounded-lg text-red-600">
-      {icon}
-    </div>
+    <div className="p-2 bg-red-100 rounded-lg text-red-600">{icon}</div>
   </div>
 );
 
