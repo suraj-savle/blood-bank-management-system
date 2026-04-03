@@ -101,6 +101,26 @@ npm install
 npm run dev
 ```
 
+### 🐳 Another Option: Run with Docker (Recommended)
+
+Make sure Docker Desktop is installed and running.
+
+```bash
+docker compose up --build
+```
+
+Access the app:
+
+Frontend → http://localhost
+
+Backend → http://localhost:3000
+
+Seed Admin User (if needed)
+
+```bash
+docker exec -it backend node seedAdmin.js
+```
+
 **Login Page**
 
 <img width="1920" height="970" alt="image" src="https://github.com/user-attachments/assets/b7796043-c68d-4dda-8203-0be6b79ee5c0" />

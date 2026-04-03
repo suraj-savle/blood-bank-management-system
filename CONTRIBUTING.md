@@ -20,7 +20,30 @@ git clone https://github.com/suraj-savle/blood-bank-management-system.git
 git checkout -b feature-branch-name
 ```
 
-## 4. Install Dependencies
+### 4. Install Dependencies
+
+### 🐳 Option 1: Run with Docker (Recommended)
+
+Make sure Docker Desktop is installed and running.
+
+```bash
+docker compose up --build
+```
+
+Access the app:
+
+Frontend → http://localhost
+
+Backend → http://localhost:3000
+
+Seed Admin User (if needed)
+
+```bash
+docker exec -it backend node seedAdmin.js
+```
+
+### 💻 Option 2: Run without Docker (Manual Setup)
+
 
 ### Backend
 
