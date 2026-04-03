@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: blood-bank
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: <registry>/<repository>:<tag>
+        ports:
+        - containerPort: 80
+        resorces:
+          requests:
+            cpu: "10m"
+             memory: "10Mi"
+          limits:
+            cpu: "100m"
+            memory: "512Mi"
+        

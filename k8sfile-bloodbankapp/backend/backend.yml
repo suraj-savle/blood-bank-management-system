@@ -1,0 +1,45 @@
+#deployment for blood bank
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend1
+  namespace: blood-bank
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: myapp
+          image: <registry>/<repository>:<tag>
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://admin:rootpassword@mongo:27017/"
+            - name: PORT
+              value: "5000"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend
+                  key: token
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "70Mi"
+            limits:
+              cpu : "200m"
+              memory: "100Mi"
+          volumeMounts:
+          - name: backend-storage
+            mountPath: /app/data
+      volumes:
+      - name: backend-storage
+        persistentVolumeClaim:
+          claimName: backend-pvc
