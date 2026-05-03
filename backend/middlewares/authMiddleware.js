@@ -13,6 +13,7 @@ export const protect = async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
+      
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       let user =
@@ -20,14 +21,15 @@ export const protect = async (req, res, next) => {
         (await Admin.findById(decoded.id).select("-password")) ||
         (await Facility.findById(decoded.id).select("-password"));
 
-      if (!user)
+      if (!user) {
         return res.status(401).json({ message: "User not found or unauthorized" });
+      }
 
       req.user = { id: user._id, role: decoded.role };
       next();
     } catch (error) {
-      console.error("Auth middleware error:", error);
-      return res.status(401).json({ message: "Token invalid or expired" });
+
+      return res.status(401).json({ message: "Token invalid or expired", error: error.message });
     }
   } else {
     res.status(401).json({ message: "No token provided" });

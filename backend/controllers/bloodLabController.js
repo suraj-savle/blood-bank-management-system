@@ -3,6 +3,7 @@ import Blood from "../models/bloodModel.js";
 import BloodCamp from "../models/bloodCampModel.js";
 import Facility from "../models/facilityModel.js";
 import BloodRequest from "../models/bloodRequestModel.js";
+import Donor from "../models/donorModel.js";
 
 
 /* ==============================================================
@@ -687,5 +688,142 @@ export const getAllLabs = async (req, res) => {
       success: false,
       message: "Error fetching blood labs"
     });
+  }
+};
+
+/**
+ * @desc Get registrations for a camp (with donor info)
+ * @route GET /api/blood-lab/camps/:id/registrations
+ * @access Private (Blood Lab)
+ */
+export const getCampRegistrations = async (req, res) => {
+  try {
+    const labId = req.user._id;
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({ success: false, message: "Invalid camp ID" });
+
+    const camp = await BloodCamp.findById(id).populate({
+      path: 'registrations.donor',
+      select: 'fullName email phone bloodGroup age weight address lastDonationDate eligibleToDonate',
+    });
+
+    if (!camp) {
+      console.warn(`Camp ${id} not found`);
+      return res.status(404).json({ success: false, message: "Camp not found" });
+    }
+
+    const campOwnerId = camp.hospital?._id ? String(camp.hospital._id) : String(camp.hospital || "");
+    if (campOwnerId && campOwnerId !== String(labId)) {
+      return res.status(403).json({ success: false, message: "Not authorized to view this camp" });
+    }
+
+    const registrations = (camp.registrations || []).map((r) => {
+      const donorId = r.donor && r.donor._id ? String(r.donor._id) : (r.donor ? String(r.donor) : null);
+      return {
+        donor: r.donor && typeof r.donor === 'object' ? r.donor : null,
+        donorId: donorId,
+        bookedAt: r.bookedAt || null,
+        donationDone: !!r.donationDone,
+        verifiedAt: r.verifiedAt || null,
+      };
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      registrations, 
+      campId: camp._id,
+      totalRegistrations: registrations.length,
+      campTitle: camp.title,
+    });
+  } catch (error) {
+    console.error("Get camp registrations error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch registrations" });
+  }
+};
+
+/**
+ * @desc Verify a donor's donation for a specific camp
+ * @route POST /api/blood-lab/camps/:campId/registrations/:donorId/verify
+ * @access Private (Blood Lab)
+ */
+export const verifyCampDonation = async (req, res) => {
+  try {
+    const labId = req.user._id;
+    const { campId, donorId } = req.params;
+    const { quantity = 1, bloodGroup = null, remarks = '' } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(campId) || !mongoose.Types.ObjectId.isValid(donorId))
+      return res.status(400).json({ success: false, message: "Invalid IDs" });
+
+    const camp = await BloodCamp.findById(campId);
+    if (!camp) return res.status(404).json({ success: false, message: "Camp not found" });
+
+    const campOwnerId = camp.hospital?._id ? String(camp.hospital._id) : String(camp.hospital || "");
+    if (campOwnerId && campOwnerId !== String(labId)) {
+      return res.status(403).json({ success: false, message: "Not authorized to verify this camp" });
+    }
+
+    const reg = camp.registrations.find((r) => String(r.donor) === String(donorId));
+    if (!reg) return res.status(404).json({ success: false, message: "Registration not found" });
+    if (reg.donationDone) return res.status(409).json({ success: false, message: "Donation already verified" });
+
+    // Mark registration verified
+    reg.donationDone = true;
+    reg.verifiedAt = new Date();
+
+    // Increment camp actualDonors
+    camp.actualDonors = (camp.actualDonors || 0) + 1;
+    await camp.save();
+
+    // Update donor donation history
+    const donor = await Donor.findById(donorId);
+    if (donor) {
+      donor.lastDonationDate = new Date();
+      donor.donationHistory.push({
+        donationDate: new Date(),
+        facility: labId,
+        bloodGroup: bloodGroup || donor.bloodGroup,
+        quantity,
+        remarks,
+        verified: true,
+      });
+      await donor.save();
+    }
+
+    // Add to blood stock
+    try {
+      const bloodType = bloodGroup || (donor && donor.bloodGroup) || 'Unknown';
+      let stock = await Blood.findOne({ bloodGroup: bloodType, bloodLab: labId });
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 42);
+      if (stock) {
+        stock.quantity += Number(quantity);
+        stock.expiryDate = expiryDate;
+        await stock.save();
+      } else {
+        await Blood.create({ bloodGroup: bloodType, quantity: Number(quantity), expiryDate, bloodLab: labId });
+      }
+    } catch (err) {
+      console.error('Error adding to blood stock after verification', err);
+    }
+
+    // Add to facility history
+    await Facility.findByIdAndUpdate(labId, {
+      $push: {
+        history: {
+          eventType: 'Verification',
+          description: `Verified donation for ${donor ? donor.fullName : donorId} at ${camp.title}`,
+          date: new Date(),
+          referenceId: camp._id,
+        },
+      },
+    }).catch(() => null);
+
+    return res.status(200).json({ success: true, message: 'Donation verified', campId: camp._id, donorId });
+  } catch (error) {
+    console.error('Verify camp donation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to verify donation' });
   }
 };

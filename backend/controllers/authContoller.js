@@ -67,24 +67,18 @@ export const login = async (req, res) => {
       (await Facility.findOne({ email }).select("+password"));
 
     if (!user) {
-      console.log(`❌ User not found for email: ${email}`);
       return res.status(404).json({ message: "User not found" });
     }
-
-    console.log(`✅ User found: ${email}, Role: ${user.role}`);
 
     // Compare password with trim for consistency
     const isMatch = await bcrypt.compare(password.trim(), user.password);
 
     if (!isMatch) {
-      console.log(`❌ Password mismatch for user: ${email}`);
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    console.log(`✅ Password verified for user: ${email}`);
-
-    // 🚫 If facility not approved yet
-    // ✅ If facility not approved yet
+    //  If facility not approved yet
+    //  If facility not approved yet
     if (user instanceof Facility) {
       if (user.status === "pending") { // <-- FIXED: Use lowercase "pending"
         return res.status(403).json({
@@ -137,7 +131,7 @@ export const login = async (req, res) => {
       redirect,
     });
   } catch (error) {
-    console.error("🚨 Login Error:", error);
+    console.error("Login Error:", error);
     res
       .status(500)
       .json({ message: "Login failed", error: error.message });

@@ -18,7 +18,7 @@ export const getDashboardStats = async (req, res) => {
 
     const activeDonors = await Donor.countDocuments({ isEligible: true });
 
-    res.status(200).json({
+    const statsData = {
       totalDonors,
       totalFacilities,
       approvedFacilities,
@@ -26,10 +26,11 @@ export const getDashboardStats = async (req, res) => {
       totalDonations,
       activeDonors,
       upcomingCamps: 3, // Placeholder
-    });
+    };
+
+    res.status(200).json(statsData);
   } catch (err) {
-    console.error("Admin Stats Error:", err);
-    res.status(500).json({ message: "Failed to fetch stats" });
+    res.status(500).json({ message: "Failed to fetch stats", error: err.message });
   }
 };
 
@@ -44,7 +45,7 @@ export const getAllDonors = async (req, res) => {
   }
 };
 
-// 🏥 Get All Facilities (Pending + Approved)
+//  Get All Facilities (Pending + Approved)
 export const getAllFacilities = async (req, res) => {
   try {
     const facilities = await Facility.find();
@@ -54,7 +55,7 @@ export const getAllFacilities = async (req, res) => {
   }
 };
 
-// ✅ Approve a Facility
+//  Approve a Facility
 export const approveFacility = async (req, res) => {
   try {
     const facility = await Facility.findById(req.params.id);
@@ -73,7 +74,7 @@ export const approveFacility = async (req, res) => {
   }
 };
 
-// ❌ Reject / Update Facility Status to Rejected
+//  Reject / Update Facility Status to Rejected
 export const rejectFacility = async (req, res) => {
   try {
     const facility = await Facility.findById(req.params.id);
