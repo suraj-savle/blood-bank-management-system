@@ -35,15 +35,11 @@ const BloodLabDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("🔄 Starting dashboard data fetch...");
-      console.log("🔑 Token present:", !!token);
 
       if (!token) {
         toast.error("Authentication required");
         return;
       }
-
-      console.log("📡 Making API requests...");
 
       const [dashboardRes, stockRes, profileRes] = await Promise.all([
         axios
@@ -88,11 +84,6 @@ const BloodLabDashboard = () => {
           }),
       ]);
 
-      console.log("✅ API Responses received:");
-      console.log("📊 Dashboard Response:", dashboardRes.data);
-      console.log("🩸 Stock Response:", stockRes.data);
-      console.log("📜 History/Profile Response:", profileRes.data);
-
       setDashboard(dashboardRes.data);
 
       // Fix: Handle different response structures for stock
@@ -104,7 +95,6 @@ const BloodLabDashboard = () => {
       } else if (Array.isArray(stockRes.data)) {
         stockData = stockRes.data; // [...]
       }
-      console.log("📦 Setting stock data:", stockData);
       setStock(stockData);
 
       // Fix: Handle different response structures for lab/history
@@ -118,24 +108,12 @@ const BloodLabDashboard = () => {
         historyData = facilityProfile.history || [];
       }
 
-      console.log("🏢 Setting lab data (from dashboard):", facilityProfile);
-      console.log(
-        "📚 Setting history data (from history endpoint/fallback):",
-        historyData,
-      );
-
       setLab({
         ...facilityProfile,
         history: historyData,
       });
     } catch (error) {
       console.error("🚨 Dashboard Error:", error);
-      console.log("Error details:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        url: error.config?.url,
-      });
       const message =
         error.response?.data?.message || "Failed to load dashboard data";
       toast.error(message);
@@ -143,7 +121,6 @@ const BloodLabDashboard = () => {
   };
 
   const handleRefresh = async () => {
-    console.log("🔄 Manual refresh triggered");
     setRefreshing(true);
     await fetchDashboardData();
     setRefreshing(false);
@@ -151,27 +128,15 @@ const BloodLabDashboard = () => {
   };
 
   useEffect(() => {
-    console.log("🎯 Dashboard component mounted");
     const loadData = async () => {
       setLoading(true);
       await fetchDashboardData();
       setLoading(false);
-      console.log("🏁 Dashboard data loading completed");
     };
     loadData();
   }, []);
 
   // Debug current state
-  console.log("📊 Current State:", {
-    dashboard: dashboard,
-    stock: stock,
-    lab: lab,
-    loading: loading,
-    stockLength: stock?.length,
-    labHistoryLength: lab?.history?.length,
-    dashboardCampsLength: dashboard?.recentCamps?.length,
-  });
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center">
@@ -196,20 +161,9 @@ const BloodLabDashboard = () => {
     (blood) => (blood.quantity || 0) < 10,
   ).length;
 
-  console.log("🧮 Calculated metrics:", {
-    totalUnits,
-    criticalStock,
-    stockItems: stock.map((s) => ({
-      type: s.bloodGroup || s.bloodType,
-      quantity: s.quantity,
-      id: s._id,
-    })),
-  });
-
   // Get login history - filter for login events
   const loginHistory =
     lab?.history?.filter((h) => h.eventType === "Login") || [];
-  console.log("🔐 Login History:", loginHistory);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-white p-6">
@@ -342,7 +296,6 @@ const BloodLabDashboard = () => {
           {stock.length > 0 ? (
             <div className="space-y-3">
               {stock.map((blood) => {
-                console.log("🩸 Rendering blood item:", blood);
                 const bloodType = blood.bloodGroup || blood.bloodType;
                 const quantity = blood.quantity || 0;
                 return (
@@ -372,7 +325,6 @@ const BloodLabDashboard = () => {
           {dashboard?.recentCamps?.length > 0 ? (
             <div className="space-y-4">
               {dashboard.recentCamps.slice(0, 4).map((camp) => {
-                console.log("🏕️ Rendering camp:", camp);
                 return <CampCard key={camp._id} camp={camp} />;
               })}
             </div>

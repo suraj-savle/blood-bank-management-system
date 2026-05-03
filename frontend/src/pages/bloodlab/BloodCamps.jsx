@@ -59,25 +59,17 @@ const BloodCamps = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [actionMenu, setActionMenu] = useState(null);
+  const [showRegistrationsModal, setShowRegistrationsModal] = useState(false);
+  const [registrations, setRegistrations] = useState([]);
+  const [regsLoading, setRegsLoading] = useState(false);
+  const [selectedCampId, setSelectedCampId] = useState(null);
 
   const token = localStorage.getItem("token");
   // Fixed API URL - removed /blood-lab if it doesn't exist
   const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/blood-lab`;
 
-  console.log("🔧 BloodCamps Component State:", {
-    campsCount: camps.length,
-    loading,
-    showForm,
-    editingCamp: editingCamp?._id,
-    filters,
-    pagination,
-    stats,
-    token: token ? "Present" : "Missing",
-  });
-
   // Calculate stats from camps data
   const calculateStats = (campsData) => {
-    console.log("📊 Calculating stats from camps:", campsData);
     const stats = {
       upcoming: campsData.filter((camp) => camp.status === "Upcoming").length,
       ongoing: campsData.filter((camp) => camp.status === "Ongoing").length,
@@ -85,13 +77,11 @@ const BloodCamps = () => {
       cancelled: campsData.filter((camp) => camp.status === "Cancelled").length,
       total: campsData.length,
     };
-    console.log("📈 Calculated stats:", stats);
     return stats;
   };
 
   // Validation function
   const validateForm = (data) => {
-    console.log("📋 Validating form data:", data);
     const newErrors = {};
 
     if (!data.title?.trim()) newErrors.title = "Title is required";
@@ -119,7 +109,6 @@ const BloodCamps = () => {
       newErrors.endTime = "End time must be after start time";
     }
 
-    console.log("❌ Validation errors:", newErrors);
     return newErrors;
   };
 
@@ -127,7 +116,6 @@ const BloodCamps = () => {
   const fetchCamps = async (page = 1) => {
     try {
       setLoading(true);
-      console.log("🔄 Fetching camps with filters:", { ...filters, page });
 
       const queryParams = new URLSearchParams({
         status: filters.status,
@@ -140,7 +128,6 @@ const BloodCamps = () => {
 
       // Try different endpoint variations
       const url = `${API_URL}/camps?${queryParams}`;
-      console.log("📡 API URL:", url);
 
       const res = await fetch(url, {
         headers: {
@@ -148,8 +135,6 @@ const BloodCamps = () => {
           "Content-Type": "application/json",
         },
       });
-
-      console.log("📨 Response status:", res.status, res.statusText);
 
       // Check if response is JSON
       const contentType = res.headers.get("content-type");
@@ -173,17 +158,10 @@ const BloodCamps = () => {
       }
 
       const data = await res.json();
-      console.log("✅ API Response data:", data);
 
       if (data.success) {
         const campsData = data.data?.camps || data.camps || [];
         const calculatedStats = calculateStats(campsData);
-
-        console.log("📊 Setting camps data:", {
-          campsCount: campsData.length,
-          pagination: data.data?.pagination || data.pagination,
-          stats: calculatedStats,
-        });
 
         setCamps(campsData);
         setPagination(
@@ -225,11 +203,72 @@ const BloodCamps = () => {
     }
   };
 
+  // Fetch registrations for a camp (facility view)
+  const fetchRegistrations = async (campId) => {
+    try {
+      setRegsLoading(true);
+      setSelectedCampId(campId);
+      setShowRegistrationsModal(true);
+      const res = await fetch(`${API_URL}/camps/${campId}/registrations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('❌ Non-JSON registrations response:', text.substring(0,200));
+        toast.error('Server returned non-JSON for registrations');
+        setRegistrations([]);
+        return;
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRegistrations(data.registrations || []);
+      } else {
+        toast.error(data.message || "Failed to load registrations");
+        setRegistrations([]);
+      }
+    } catch (err) {
+      console.error('Fetch registrations error', err);
+      toast.error('Failed to load registrations');
+      setRegistrations([]);
+    } finally {
+      setRegsLoading(false);
+    }
+  };
+
+  const verifyDonation = async (campId, donorId) => {
+    try {
+      const res = await fetch(`${API_URL}/camps/${campId}/registrations/${donorId}/verify`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: 1, remarks: 'Verified at camp' }),
+      });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('❌ Non-JSON verify response:', text.substring(0, 200));
+        toast.error('Server error during verification');
+        return;
+      }
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Donation verified ✓');
+        // Re-fetch registrations to sync with backend
+        fetchRegistrations(campId);
+        // Re-fetch camps to update actualDonors count
+        fetchCamps();
+      } else {
+        toast.error(data.message || 'Failed to verify donation');
+      }
+    } catch (err) {
+      console.error('🚨 Verify donation error', err);
+      toast.error('Error verifying donation');
+    }
+  };
+
   // Update camp status - FIXED VERSION
   const updateCampStatus = async (campId, newStatus) => {
     try {
-      console.log("🔄 Updating camp status:", { campId, newStatus });
-
       // Try different endpoint variations
       const endpoints = [
         `${API_URL}/camps/${campId}/status`,
@@ -241,8 +280,6 @@ const BloodCamps = () => {
 
       for (const url of endpoints) {
         try {
-          console.log("🔗 Trying endpoint:", url);
-
           const payload = { status: newStatus };
           const res = await fetch(url, {
             method: "PATCH",
@@ -266,11 +303,6 @@ const BloodCamps = () => {
           }
 
           const data = await res.json();
-          console.log("📨 Status update response:", {
-            status: res.status,
-            data,
-          });
-
           if (res.ok && data.success) {
             toast.success(`Camp marked as ${newStatus.toLowerCase()}!`);
             setActionMenu(null);
@@ -300,13 +332,11 @@ const BloodCamps = () => {
   };
 
   useEffect(() => {
-    console.log("🎯 BloodCamps component mounted");
     fetchCamps();
   }, [filters]);
 
   // Reset form
   const resetForm = () => {
-    console.log("🔄 Resetting form");
     setFormData({
       title: "",
       description: "",
@@ -327,11 +357,6 @@ const BloodCamps = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-
-    console.log("📤 Form submission started:", {
-      formData,
-      editingCamp: editingCamp?._id,
-    });
 
     const formErrors = validateForm(formData);
     if (Object.keys(formErrors).length > 0) {
@@ -367,9 +392,6 @@ const BloodCamps = () => {
           expectedDonors: Number(formData.expectedDonors),
         };
 
-        console.log("📦 Sending payload:", payload);
-        console.log("🔗 Making request to:", url, "Method:", method);
-
         try {
           const res = await fetch(url, {
             method,
@@ -393,11 +415,6 @@ const BloodCamps = () => {
           }
 
           const data = await res.json();
-          console.log("📨 Form submission response:", {
-            status: res.status,
-            data,
-          });
-
           if (res.ok && data.success) {
             toast.success(
               `Blood Camp ${editingCamp ? "Updated" : "Added"} Successfully!`,
@@ -436,7 +453,6 @@ const BloodCamps = () => {
 
   // Handle edit
   const handleEdit = (camp) => {
-    console.log("✏️ Editing camp:", camp);
     setEditingCamp(camp);
     setFormData({
       title: camp.title,
@@ -456,7 +472,6 @@ const BloodCamps = () => {
 
   // Handle delete
   const handleDeleteCamp = async (id) => {
-    console.log("🗑️ Deleting camp:", id);
     if (
       !window.confirm(
         "Are you sure you want to delete this camp? This action cannot be undone.",
@@ -472,8 +487,6 @@ const BloodCamps = () => {
 
       for (const url of endpoints) {
         try {
-          console.log("🔗 DELETE request to:", url);
-
           const res = await fetch(url, {
             method: "DELETE",
             headers: {
@@ -495,8 +508,6 @@ const BloodCamps = () => {
           }
 
           const data = await res.json();
-          console.log("📨 Delete response:", { status: res.status, data });
-
           if (res.ok && data.success) {
             toast.success("Camp deleted successfully!");
             fetchCamps();
@@ -524,7 +535,6 @@ const BloodCamps = () => {
 
   // Handle input change
   const handleInputChange = (field, value) => {
-    console.log("⌨️ Input change:", field, value);
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -667,7 +677,6 @@ const BloodCamps = () => {
             </div>
             <button
               onClick={() => {
-                console.log("➕ Add camp button clicked");
                 resetForm();
                 setShowForm(!showForm);
               }}
@@ -727,7 +736,6 @@ const BloodCamps = () => {
                   placeholder="Search camps..."
                   value={filters.search}
                   onChange={(e) => {
-                    console.log("🔍 Search filter:", e.target.value);
                     setFilters((prev) => ({ ...prev, search: e.target.value }));
                   }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -737,7 +745,6 @@ const BloodCamps = () => {
             <select
               value={filters.status}
               onChange={(e) => {
-                console.log("📊 Status filter:", e.target.value);
                 setFilters((prev) => ({ ...prev, status: e.target.value }));
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -751,7 +758,6 @@ const BloodCamps = () => {
             <select
               value={filters.sortBy}
               onChange={(e) => {
-                console.log("📈 Sort by:", e.target.value);
                 setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
@@ -762,7 +768,6 @@ const BloodCamps = () => {
             </select>
             <button
               onClick={() => {
-                console.log("🔄 Toggling sort order");
                 setFilters((prev) => ({
                   ...prev,
                   sortOrder: prev.sortOrder === "desc" ? "asc" : "desc",
@@ -1003,7 +1008,6 @@ const BloodCamps = () => {
               <button
                 type="button"
                 onClick={() => {
-                  console.log("❌ Form cancelled");
                   setShowForm(false);
                   resetForm();
                 }}
@@ -1037,7 +1041,6 @@ const BloodCamps = () => {
             {!filters.search && filters.status === "all" && (
               <button
                 onClick={() => {
-                  console.log("➕ Create first camp clicked");
                   setShowForm(true);
                 }}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
@@ -1050,7 +1053,6 @@ const BloodCamps = () => {
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {camps.map((camp) => {
-                console.log("🎪 Rendering camp card:", camp._id, camp.title);
                 const availableActions = getAvailableActions(camp);
 
                 return (
@@ -1096,6 +1098,47 @@ const BloodCamps = () => {
                                     {action.label}
                                   </button>
                                 ))}
+                              </div>
+                            )}
+
+                            {/* Registrations Modal */}
+                            {showRegistrationsModal && (
+                              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                                <div className="bg-white w-full max-w-2xl mx-4 rounded-xl p-6 shadow-lg">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold">Camp Registrations</h3>
+                                    <button onClick={() => setShowRegistrationsModal(false)} className="text-gray-600 hover:text-gray-800">Close</button>
+                                  </div>
+                                  {regsLoading ? (
+                                    <div>Loading...</div>
+                                  ) : (
+                                    <div className="space-y-3 max-h-96 overflow-auto">
+                                      {registrations.length === 0 && <div className="text-sm text-gray-600">No registrations yet.</div>}
+                                      {registrations.map((r, idx) => {
+                                        const donorId = r.donor?._id || r.donorId;
+                                        return (
+                                          <div key={idx} className="border rounded-lg p-3 flex justify-between items-center">
+                                            <div>
+                                              <div className="font-medium">{r.donor?.fullName || 'Unknown Donor'}</div>
+                                              <div className="text-sm text-gray-600">{r.donor?.email || 'N/A'} • {r.donor?.phone || 'N/A'}</div>
+                                              <div className="text-sm text-gray-500">Blood: {r.donor?.bloodGroup || 'N/A'} • Age: {r.donor?.age || 'N/A'}</div>
+                                              <div className="text-sm text-gray-400">Booked: {r.bookedAt ? new Date(r.bookedAt).toLocaleString() : 'N/A'}</div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-2">
+                                              {r.donationDone ? (
+                                                <div className="text-green-600 font-medium">✓ Donated</div>
+                                              ) : donorId ? (
+                                                <button onClick={() => verifyDonation(selectedCampId, donorId)} className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Mark Donated</button>
+                                              ) : (
+                                                <div className="text-gray-400">No donor ID</div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1156,6 +1199,14 @@ const BloodCamps = () => {
                           <span>Actual: {camp.actualDonors} donors</span>
                         </div>
                       )}
+                        <div className="mt-3">
+                          <button
+                            onClick={() => fetchRegistrations(camp._id)}
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            View Registrations
+                          </button>
+                        </div>
                     </div>
                   </div>
                 );
@@ -1167,7 +1218,6 @@ const BloodCamps = () => {
               <div className="flex justify-center items-center gap-4">
                 <button
                   onClick={() => {
-                    console.log("⬅️ Previous page");
                     fetchCamps(pagination.currentPage - 1);
                   }}
                   disabled={!pagination.hasPrev}
@@ -1180,7 +1230,6 @@ const BloodCamps = () => {
                 </span>
                 <button
                   onClick={() => {
-                    console.log("➡️ Next page");
                     fetchCamps(pagination.currentPage + 1);
                   }}
                   disabled={!pagination.hasNext}

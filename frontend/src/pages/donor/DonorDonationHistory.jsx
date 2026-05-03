@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Droplet,
   Calendar,
@@ -21,6 +22,7 @@ import { toast } from "react-hot-toast";
 const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
 
 const DonorDonationHistory = () => {
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,6 @@ const DonorDonationHistory = () => {
         res.data.history ||
         res.data.donations ||
         (Array.isArray(res.data) ? res.data : []);
-      console.log("Fetched donation history:", data);
 
       // Sort by date descending initially
       data.sort(
@@ -398,7 +399,10 @@ const DonorDonationHistory = () => {
                   : "Try adjusting your search or filters to find what you're looking for."}
               </p>
               {history.length === 0 && (
-                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors">
+                <button
+                  onClick={() => navigate("/donor/camps")}
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors"
+                >
                   Schedule Your First Donation
                 </button>
               )}

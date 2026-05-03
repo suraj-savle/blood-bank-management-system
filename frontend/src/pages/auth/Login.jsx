@@ -27,7 +27,7 @@ export default function Login() {
     }
 
     try {
-      const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/login`;
+      const apiUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/login`;
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,8 +43,6 @@ export default function Login() {
         // Server returned an error but not JSON
         data = { message: `Server error: ${res.status}` };
       }
-
-      console.log("Login response:", data);
 
       if (!res.ok) {
         // 🔒 Handle facility waiting approval or rejected cases

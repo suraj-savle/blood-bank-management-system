@@ -40,6 +40,21 @@ const bloodCampSchema = new mongoose.Schema(
       enum: ["Upcoming", "Ongoing", "Completed", "Cancelled"],
       default: "Upcoming",
     },
+    registrations: [
+      {
+        donor: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Donor",
+          required: true,
+        },
+        bookedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        donationDone: { type: Boolean, default: false },
+        verifiedAt: { type: Date },
+      },
+    ],
   },
   { timestamps: true }
 );

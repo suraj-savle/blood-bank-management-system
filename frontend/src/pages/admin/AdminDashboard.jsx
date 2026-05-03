@@ -32,16 +32,12 @@ const AdminDashboard = () => {
         return;
       }
 
-      console.log("🔄 Fetching admin dashboard stats...");
-      
       const res = await fetch("/api/admin/dashboard", {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      console.log("📨 Dashboard response status:", res.status);
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -50,7 +46,6 @@ const AdminDashboard = () => {
       }
 
       const data = await res.json();
-      console.log("✅ Dashboard stats:", data);
       setStats(data);
 
       if (showToast) {

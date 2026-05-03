@@ -34,16 +34,12 @@ const FacilityApproval = () => {
       if (showToast) setRefreshing(true);
       else setLoading(true);
 
-      console.log("🔄 Fetching facilities...");
-
       const res = await fetch(`${API_URL}/facilities`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      console.log("📨 Response status:", res.status);
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -52,7 +48,6 @@ const FacilityApproval = () => {
       }
 
       const data = await res.json();
-      console.log("✅ Facilities data:", data);
 
       // Filter to show only pending facilities for approval
       const pendingFacilities =
@@ -82,7 +77,6 @@ const FacilityApproval = () => {
     }
 
     setActionLoading(facilityId);
-    console.log("✅ Approving facility:", facilityId);
 
     try {
       const res = await fetch(`${API_URL}/facility/approve/${facilityId}`, {
@@ -94,7 +88,6 @@ const FacilityApproval = () => {
       });
 
       const data = await res.json();
-      console.log("📨 Approval response:", data);
 
       if (res.ok && data.message) {
         toast.success("Facility approved successfully!");
@@ -124,12 +117,6 @@ const FacilityApproval = () => {
     }
 
     setActionLoading(facilityId);
-    console.log(
-      "❌ Rejecting facility:",
-      facilityId,
-      "Reason:",
-      rejectionReason,
-    );
 
     try {
       const res = await fetch(`${API_URL}/facility/reject/${facilityId}`, {
@@ -143,7 +130,6 @@ const FacilityApproval = () => {
       });
 
       const data = await res.json();
-      console.log("📨 Rejection response:", data);
 
       if (res.ok && data.message) {
         toast.success("Facility rejected successfully!");
@@ -167,8 +153,6 @@ const FacilityApproval = () => {
       toast.error("Document not available");
       return;
     }
-
-    console.log("📄 Opening document:", documentUrl);
     window.open(documentUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -177,8 +161,6 @@ const FacilityApproval = () => {
       toast.error("Document not available for download");
       return;
     }
-
-    console.log("💾 Downloading document:", documentUrl);
     const link = document.createElement("a");
     link.href = documentUrl;
     link.download = filename;
@@ -332,7 +314,6 @@ const FacilityApproval = () => {
                       : "border-red-100 hover:border-red-300"
                   }`}
                   onClick={() => {
-                    console.log("🎯 Selecting facility:", facility._id);
                     setSelectedFacility(facility);
                   }}
                 >

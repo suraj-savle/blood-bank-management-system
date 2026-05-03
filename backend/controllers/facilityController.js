@@ -40,11 +40,6 @@ export const updateProfile = async (req, res) => {
   session.startTransaction();
 
   try {
-    console.log("📝 Facility profile update request:", {
-      userId: req.user._id,
-      updates: Object.keys(req.body)
-    });
-
     const updates = { ...req.body };
     // The user ID is expected to be attached to the request object via middleware (e.g., auth middleware)
     const facilityId = req.user._id;
@@ -127,8 +122,6 @@ export const updateProfile = async (req, res) => {
 
     await session.commitTransaction();
 
-    console.log("✅ Facility profile updated successfully:", updatedFacility._id);
-
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
@@ -137,7 +130,6 @@ export const updateProfile = async (req, res) => {
 
   } catch (error) {
     await session.abortTransaction();
-    console.error("🚨 Update Facility Profile Error:", error);
 
     let errorMessage = "Failed to update profile";
     let validationErrors = {};

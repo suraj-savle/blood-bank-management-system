@@ -18,8 +18,8 @@ import {
   ListPlus,
 } from "lucide-react";
 
-// NOTE: Ensure this URL matches your running backend API endpoint
-const API_BASE_URL = "/api";
+// Route requests directly to backend in dev/prod (without relying on Vite proxy).
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Camps" },
@@ -29,7 +29,7 @@ const STATUS_OPTIONS = [
   { value: "Cancelled", label: "Cancelled" },
 ];
 
-const CampCard = ({ camp }) => {
+const CampCard = ({ camp, onBook, onCancel, actionLoading }) => {
   const isCompleted = camp.status === 'Completed';
   const isCancelled = camp.status === 'Cancelled';
   const isUpcoming = camp.status === 'Upcoming';
@@ -57,6 +57,7 @@ const CampCard = ({ camp }) => {
   
   const slotsAvailable = expectedDonors > 0 ? expectedDonors - actualDonors : 0;
   const isFull = slotsAvailable <= 0 && expectedDonors > 0 && !isCompleted && !isCancelled;
+  const isBooked = Boolean(camp.isBooked);
 
   // 1. Full Address including Pincode
   const { venue, city, state, pincode } = camp.location || {};
@@ -151,6 +152,32 @@ const CampCard = ({ camp }) => {
             <h5 className="font-bold text-gray-800 mb-1 flex items-center gap-2"><Droplet className="w-4 h-4" /> Description</h5>
             <p className="text-gray-600 text-sm italic whitespace-pre-wrap">{camp.description || 'No detailed description provided for this camp.'}</p>
           </div>
+
+          <div className="mt-4">
+            {isBooked ? (
+              <button
+                type="button"
+                onClick={() => onCancel(camp._id)}
+                disabled={actionLoading}
+                className="w-full px-4 py-2.5 rounded-xl border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                {actionLoading ? "Updating..." : "Cancel Booking"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onBook(camp._id)}
+                disabled={isFull || isCompleted || isCancelled || actionLoading}
+                className="w-full px-4 py-2.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                {actionLoading
+                  ? "Booking..."
+                  : isFull
+                    ? "Camp Full"
+                    : "Book Slot"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -163,6 +190,7 @@ export const DonorCampsList = () => {
   const [camps, setCamps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [actionCampId, setActionCampId] = useState("");
   
   const [pagination, setPagination] = useState({
     page: 1,
@@ -198,7 +226,6 @@ export const DonorCampsList = () => {
       }).toString();
       
       const apiUrl = `${API_BASE_URL}/donor/camps?${params}`;
-      console.log("Fetching camps from URL:", apiUrl);
 
       const response = await axios.get(apiUrl, {
         headers: {
@@ -206,11 +233,9 @@ export const DonorCampsList = () => {
         },
       });
 
-      const { data: responseData } = response.data;
-
-      console.log("✅ Camps fetched successfully:", responseData);
+      const responseData = response.data?.data || response.data;
       
-      if (responseData && responseData.camps) {
+      if (responseData && Array.isArray(responseData.camps)) {
         setCamps(responseData.camps);
         // Assuming pagination data is available in response.data.pagination
         setPagination(prev => ({ 
@@ -248,6 +273,64 @@ export const DonorCampsList = () => {
   // Filtering is now handled on the backend via the 'q' parameter in fetchCamps
   // We use the full 'camps' list here which should be the filtered result from the API
   const displayedCamps = camps;
+
+  const updateCampBookingState = (campId, isBooked) => {
+    setCamps((prev) =>
+      prev.map((camp) => {
+        if (camp._id !== campId) return camp;
+        return {
+          ...camp,
+          isBooked,
+        };
+      })
+    );
+  };
+
+  const handleBookCamp = async (campId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login first.");
+      return;
+    }
+
+    try {
+      setActionCampId(campId);
+      const response = await axios.post(
+        `${API_BASE_URL}/donor/camps/${campId}/book`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(response?.data?.message || "Donation slot booked successfully.");
+      updateCampBookingState(campId, true);
+    } catch (err) {
+      const message = err.response?.data?.message || "Unable to book this camp.";
+      toast.error(message);
+    } finally {
+      setActionCampId("");
+    }
+  };
+
+  const handleCancelBooking = async (campId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login first.");
+      return;
+    }
+
+    try {
+      setActionCampId(campId);
+      const response = await axios.delete(`${API_BASE_URL}/donor/camps/${campId}/book`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(response?.data?.message || "Booking cancelled successfully.");
+      updateCampBookingState(campId, false);
+    } catch (err) {
+      const message = err.response?.data?.message || "Unable to cancel this booking.";
+      toast.error(message);
+    } finally {
+      setActionCampId("");
+    }
+  };
 
 
   const handleFilterChange = (newFilter) => {
@@ -381,7 +464,13 @@ export const DonorCampsList = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {displayedCamps.map((camp) => (
-                <CampCard key={camp._id} camp={camp} />
+                <CampCard
+                  key={camp._id}
+                  camp={camp}
+                  onBook={handleBookCamp}
+                  onCancel={handleCancelBooking}
+                  actionLoading={actionCampId === camp._id}
+                />
               ))}
             </div>
 
