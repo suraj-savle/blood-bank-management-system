@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   Droplet,
   Calendar,
@@ -24,9 +25,10 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/donor`;
 
 const DonorDashboard = () => {
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [donor, setDonor] = useState(null);
   const [history, setHistory] = useState([]);
@@ -37,14 +39,11 @@ const DonorDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("🔄 Starting donor dashboard data fetch...");
 
       if (!token) {
         toast.error("Authentication required");
         return;
       }
-
-      console.log("📡 Making API requests...");
 
       const [profileRes, historyRes, statsRes] = await Promise.all([
         axios.get(`${API_URL}/profile`, {
@@ -59,11 +58,6 @@ const DonorDashboard = () => {
           })
           .catch(() => ({ data: {} })), // Fallback if stats endpoint doesn't exist
       ]);
-
-      console.log("✅ API Responses received:");
-      console.log("👤 Profile Response:", profileRes.data);
-      console.log("📜 History Response:", historyRes.data);
-      console.log("📊 Stats Response:", statsRes.data);
 
       const donorData = profileRes.data.donor || profileRes.data;
       setDonor(donorData);
@@ -116,7 +110,6 @@ const DonorDashboard = () => {
   };
 
   const handleRefresh = async () => {
-    console.log("🔄 Manual refresh triggered");
     setRefreshing(true);
     await fetchDashboardData();
     setRefreshing(false);
@@ -124,25 +117,15 @@ const DonorDashboard = () => {
   };
 
   useEffect(() => {
-    console.log("🎯 Donor Dashboard component mounted");
     const loadData = async () => {
       setLoading(true);
       await fetchDashboardData();
       setLoading(false);
-      console.log("🏁 Donor dashboard data loading completed");
     };
     loadData();
   }, []);
 
   // Debug current state
-  console.log("📊 Current Donor State:", {
-    dashboard: dashboard,
-    donor: donor,
-    history: history,
-    loading: loading,
-    historyLength: history?.length,
-  });
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center">
@@ -327,9 +310,7 @@ const DonorDashboard = () => {
               icon={<Droplet className="w-8 h-8" />}
               message="No donation history yet"
               actionText="Make your first donation"
-              onAction={() =>
-                toast.success("Find nearby blood camps to get started!")
-              }
+              onAction={() => navigate("/donor/camps")}
             />
           )}
         </Section>
@@ -381,7 +362,7 @@ const DonorDashboard = () => {
             icon={<Calendar className="w-5 h-5" />}
             title="Schedule Donation"
             description="Book your next donation"
-            onClick={() => toast.success("Find nearby blood donation camps!")}
+            onClick={() => navigate("/donor/camps")}
             color="red"
           />
           <ActionCard

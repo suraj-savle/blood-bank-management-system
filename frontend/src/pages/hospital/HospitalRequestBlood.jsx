@@ -24,7 +24,6 @@ const HospitalRequestBlood = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLabs(res.data.labs || []);
-        console.log("Labs loaded:", res.data.labs);
       } catch (err) {
         console.error("Load labs error:", err);
         toast.error("Failed to load blood labs");
@@ -50,7 +49,6 @@ const HospitalRequestBlood = () => {
 
       toast.success("Blood request sent successfully!");
       setForm({ labId: "", bloodType: "", units: "" });
-      console.log("Request sent:", response.data);
     } catch (err) {
       console.error("Submit request error:", err);
       toast.error(err.response?.data?.message || "Failed to send request");

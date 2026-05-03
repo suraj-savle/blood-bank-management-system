@@ -33,7 +33,6 @@ const HospitalDashboard = () => {
     const fetchHospitalData = async () => {
       try {
         const token = localStorage.getItem("token");
-        console.log("Token being sent:", token);
 
         if (!token) {
           window.location.href = "/login";
@@ -46,14 +45,11 @@ const HospitalDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Facility getProfile route hit!");
-
         if (!profileRes.ok) {
           throw new Error("Failed to fetch hospital data");
         }
 
         const profileData = await profileRes.json();
-        console.log("Hospital API response:", profileData);
 
         const h = profileData.hospital || profileData.facility || profileData;
 

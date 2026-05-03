@@ -268,7 +268,6 @@ export default function DonorRegisterForm() {
     }
 
     if (!validateStep()) {
-      console.log("Validation failed on step 3. Data not submitted.");
       return;
     }
 
@@ -292,8 +291,6 @@ export default function DonorRegisterForm() {
 
     const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/auth/register`;
 
-    console.log("Submitting Donor Data:", submissionPayload);
-
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -305,7 +302,6 @@ export default function DonorRegisterForm() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Donor Registered Successfully:", result);
         toast.success("🎉 Donor Registered Successfully!");
         navigate("/login");
       } else {

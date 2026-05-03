@@ -278,7 +278,6 @@ export default function FacilityRegisterForm() {
 
     // Ensure validation runs before proceeding to API call
     if (!validateStep()) {
-      console.log("Validation failed on step 3. Data not submitted.");
       // Stop execution if validation fails
       return;
     }
@@ -305,8 +304,6 @@ export default function FacilityRegisterForm() {
     // **YOUR TARGET URL**
     const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/auth/register`;
 
-    console.log("Submitting Data to Backend:", submissionPayload); // Use the new payload
-
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -320,7 +317,6 @@ export default function FacilityRegisterForm() {
       // Check if the response status is 2xx (Success)
       if (response.ok) {
         const result = await response.json();
-        console.log("Facility Data Registered Successfully:", result);
         toast("✅ Facility Registered Successfully!");
         // You might want to clear the form or redirect here
         navigate("/");

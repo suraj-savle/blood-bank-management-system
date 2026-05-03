@@ -46,16 +46,12 @@ function GetAllFacilities() {
       if (showToast) setRefreshing(true);
       else setLoading(true);
 
-      console.log("🔄 Fetching facilities...");
-
       const res = await fetch(`${API_URL}/facilities`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      console.log("📨 Response status:", res.status);
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -64,7 +60,6 @@ function GetAllFacilities() {
       }
 
       const data = await res.json();
-      console.log("✅ Facilities data:", data);
       setFacilities(data.facilities || []);
 
       if (showToast) {

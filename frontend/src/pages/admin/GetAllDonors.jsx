@@ -45,16 +45,12 @@ function GetAllDonors() {
       if (showToast) setRefreshing(true);
       else setLoading(true);
 
-      console.log("🔄 Fetching donors...");
-
       const res = await fetch(`${API_URL}/donors`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      console.log("📨 Response status:", res.status);
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -63,7 +59,6 @@ function GetAllDonors() {
       }
 
       const data = await res.json();
-      console.log("✅ Donors data:", data);
       setDonors(data.donors || []);
 
       if (showToast) {

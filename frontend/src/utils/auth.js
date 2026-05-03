@@ -36,7 +36,6 @@ export const makeAuthenticatedRequest = async (url, options = {}, navigate) => {
     
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        console.log('Authentication failed, clearing token');
         handleAuthError(navigate);
         throw new Error("Authentication failed");
       }

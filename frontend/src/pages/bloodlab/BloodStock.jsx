@@ -34,7 +34,6 @@ const BloodStock = () => {
       const { data } = await axios.get(`${API_URL}/blood/stock`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Fetched Stock Data:", data);
       if (data.success) {
         setStock(data.data || []);
       } else {

@@ -10,6 +10,7 @@ import DonorProfile from "./pages/donor/DonorProfile";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminFacilities from "./pages/admin/AdminFacilities";
+import RoleSetup from "./pages/auth/RoleSetup";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import BloodCamps from "./pages/bloodlab/BloodCamps";
 import BloodlabDashboard from "./pages/bloodlab/BloodlabDashboard";
@@ -17,6 +18,8 @@ import BloodStock from "./pages/bloodlab/BloodStock";
 import LabProfile from "./pages/bloodlab/LabProfile";
 import GetAllFacilities from "./pages/admin/GetAllFacilities";
 import GetAllDonors from "./pages/admin/GetAllDonors";
+import AdminDonationHistory from "./pages/admin/AdminDonationHistory";
+import AdminCamps from "./pages/admin/AdminCamps";
 import DonorCampsList from "./pages/donor/DonorCampsList";
 import LabManageRequests from "./pages/bloodlab/LabManageRequests";
 import HospitalRequestBlood from "./pages/hospital/HospitalRequestBlood";
@@ -34,6 +37,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/register/donor" element={<DonorRegister />} />
+        <Route path="/register/role" element={<RoleSetup />} />
         <Route path="/register/facility" element={<FacilityForm />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
@@ -49,6 +53,7 @@ function App() {
         <Route path="/hospital" element={<ProtectedRoute><DashboardLayout userRole="hospital" /></ProtectedRoute>}>
           <Route index element={<HospitalDashboard />} />
           <Route path="blood-request-create" element={<HospitalRequestBlood />} />
+          <Route path="request-blood" element={<HospitalRequestBlood />} />
           <Route path="blood-request-history" element={<HospitalRequestHistory />} />
           <Route path="inventory" element={<HospitalBloodStock />} />
           <Route path="donors" element={<DonorDirectory />} />
@@ -68,6 +73,8 @@ function App() {
           <Route path="verification" element={<AdminFacilities />} />
           <Route path="donors" element={<GetAllDonors />} />
           <Route path="facilities" element={<GetAllFacilities />} />
+          <Route path="donations" element={<AdminDonationHistory />} />
+          <Route path="camps" element={<AdminCamps />} />
         </Route>
       </Routes>
   );

@@ -25,7 +25,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`;
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const GENDER_OPTIONS = [
@@ -115,7 +115,7 @@ const DonorProfile = () => {
         },
       });
 
-      const lastDonationDate = data.donor.lastDonationDate || data.donor.lastDonation;
+      const lastDonationDate = data?.donor?.lastDonationDate || data?.donor?.lastDonation;
 
       if (data.donor) {
         setDonor(data.donor);
@@ -141,7 +141,7 @@ const DonorProfile = () => {
             donorId: data.donor._id, // Use _id as donorId if a specific one isn't provided
         });
       } else {
-        throw new Error(data.message);
+        throw new Error(data?.message || "Donor profile payload missing.");
       }
     } catch (error) {
       console.error("❌ Fetch Donor Profile Error:", error);
