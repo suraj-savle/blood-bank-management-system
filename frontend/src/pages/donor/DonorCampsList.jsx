@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 // NOTE: Ensure this URL matches your running backend API endpoint
-const API_BASE_URL = "/api";
+const API_BASE_URL = "http://localhost:5000/api"; // Update if your backend is hosted elsewhere
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Camps" },

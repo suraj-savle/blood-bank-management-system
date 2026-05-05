@@ -27,6 +27,7 @@ import DonorDirectory from "./pages/hospital/DonorDirectory";
 import About from "./components/about/About";
 import Contact from "./components/contact/Contact";
 import DonorDonationHistory from "./pages/donor/DonorDonationHistory";
+import BloodStockGraph from "./pages/bloodlab/BloodStockGraph";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
           <Route path="camps" element={<BloodCamps />} />
           <Route path="profile" element={<LabProfile />} />
           <Route path="requests" element={<LabManageRequests />} />
+          <Route path="overview" element={<BloodStockGraph />} />
           <Route path="donor" element={<BloodLabDonor />} />
         </Route>
         

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/donor`;
 
 const DonorDonationHistory = () => {
   const [history, setHistory] = useState([]);

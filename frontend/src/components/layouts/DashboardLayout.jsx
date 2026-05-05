@@ -31,7 +31,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,9 +44,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       200: "#fecaca",
       300: "#fca5a5",
       400: "#f87171",
-      500: "#ef4444", // Main red
-      600: "#dc2626", // Dark red
-      700: "#b91c1c", // Darker red
+      500: "#ef4444",
+      600: "#dc2626",
+      700: "#b91c1c",
       800: "#991b1b",
       900: "#7f1d1d",
     },
@@ -155,6 +155,12 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           badge: null,
         },
         {
+          path: "/lab/Overview",
+          label: "Overview",
+          icon: CheckCircle,
+          badge: null,
+        },
+        {
           path: "/lab/profile",
           label: "Profile",
           icon: CheckCircle,
@@ -188,23 +194,21 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
       }
 
-      // Simple implementation of retries for robustness
       const maxRetries = 3;
       let attempt = 0;
 
       while (attempt < maxRetries) {
         try {
-
-          const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/profile`;
+          // FIXED: Proper API URL construction
+          const apiUrl = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/profile`;
           const res = await fetch(apiUrl, {
-          const res = await fetch("/api/auth/profile", {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -226,10 +230,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
             }
 
             setUserData(user);
-            setIsLoading(false); // Success
+            setIsLoading(false);
             return;
           } else if (res.status === 401 || res.status === 403) {
-            // Unauthorized/Forbidden
             console.error("Authentication failed or token expired.");
             localStorage.removeItem("token");
             navigate("/login");
@@ -243,7 +246,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           );
         }
 
-        // Prepare for retry with exponential backoff (e.g., 1s, 2s, 4s)
         attempt++;
         if (attempt < maxRetries) {
           await new Promise((resolve) =>
@@ -252,7 +254,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
         }
       }
 
-      // If all attempts fail
       console.error("All attempts to fetch user data failed.");
       localStorage.removeItem("token");
       navigate("/login");
@@ -375,7 +376,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                 className="font-medium block text-sm"
                 style={{ color: theme.primary[700] }}
               >
-                {userData?.name || userData.fullName || "User"}
+                {userData?.name || userData?.fullName || "User"}
               </span>
               <span
                 className="text-xs capitalize"
@@ -400,7 +401,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
       {/* MAIN CONTENT AREA */}
       <div className="flex flex-1 relative">
-        {/* SIDEBAR (omitted for brevity) */}
+        {/* SIDEBAR */}
         <aside
           className={`${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -545,13 +546,12 @@ const DashboardLayout = ({ userRole = "donor" }) => {
           }`}
         >
           <div className="h-full overflow-auto p-4 sm:p-6">
-            {/* PASSING DATA TO OUTLET HERE */}
             <Outlet context={{ userData, theme }} />
           </div>
         </main>
       </div>
 
-      {/* MOBILE OVERLAY (omitted for brevity) */}
+      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 lg:hidden"
@@ -559,7 +559,7 @@ const DashboardLayout = ({ userRole = "donor" }) => {
         />
       )}
 
-      {/* Mobile Footer Navigation (omitted for brevity) */}
+      {/* Mobile Footer Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-red-100 shadow-lg z-40">
         <div className="flex justify-around items-center p-2">
           {config.items.slice(0, 4).map((item) => {

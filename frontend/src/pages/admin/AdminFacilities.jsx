@@ -162,7 +162,7 @@ const FacilityApproval = () => {
     }
   };
 
-  const handleViewDocument = (documentUrl, filename = "document") => {
+  const handleViewDocument = (documentUrl) => {
     if (!documentUrl) {
       toast.error("Document not available");
       return;

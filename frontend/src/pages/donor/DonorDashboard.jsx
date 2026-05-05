@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-const API_URL = `${import.meta.env.VITE_API_URL || ""}/api/donor`;
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/donor`;
 
 const DonorDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
@@ -65,15 +65,20 @@ const DonorDashboard = () => {
       console.log("📜 History Response:", historyRes.data);
       console.log("📊 Stats Response:", statsRes.data);
 
-      const donorData = profileRes.data.donor || profileRes.data;
+      // Backend responses are wrapped as { success, statusCode, message, data }
+      const donorData =
+        profileRes.data?.data || profileRes.data?.donor || profileRes.data;
       setDonor(donorData);
 
       // Handle different response structures for history
       let historyData = [];
-      if (historyRes.data.history) {
+      // History may be nested under .data.history (controller returns { data: { history, summary } })
+      if (historyRes.data?.data?.history) {
+        historyData = historyRes.data.data.history;
+      } else if (historyRes.data.history) {
         historyData = historyRes.data.history;
-      } else if (historyRes.data.donations) {
-        historyData = historyRes.data.donations;
+      } else if (historyRes.data?.data && Array.isArray(historyRes.data.data)) {
+        historyData = historyRes.data.data;
       } else if (Array.isArray(historyRes.data)) {
         historyData = historyRes.data;
       }
@@ -103,7 +108,7 @@ const DonorDashboard = () => {
           achievementLevel,
           nextMilestone,
           completionRate,
-          ...statsRes.data,
+          ...statsRes.data?.data,
         },
         recentActivity: historyData.slice(0, 5),
       });

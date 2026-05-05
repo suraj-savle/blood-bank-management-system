@@ -322,6 +322,7 @@ export default function FacilityRegisterForm() {
         const result = await response.json();
         console.log("Facility Data Registered Successfully:", result);
         toast("✅ Facility Registered Successfully!");
+        toast("Waiting for admin approval. You will be notified once approved.");
         // You might want to clear the form or redirect here
         navigate("/");
       } else {
