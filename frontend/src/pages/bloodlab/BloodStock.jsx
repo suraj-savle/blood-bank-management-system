@@ -87,7 +87,7 @@ const BloodStock = () => {
       console.error("Stock Update Error:", error);
       toast.error(
         error.response?.data?.message ||
-          `Error ${action === "add" ? "adding" : "removing"} blood stock`,
+        `Error ${action === "add" ? "adding" : "removing"} blood stock`,
       );
     } finally {
       setSubmitting(false);
@@ -200,11 +200,10 @@ const BloodStock = () => {
             <button
               type="submit"
               disabled={submitting}
-              className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-white font-medium transition-colors ${
-                action === "add"
+              className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-white font-medium transition-colors ${action === "add"
                   ? "bg-green-600 hover:bg-green-700 disabled:bg-green-400"
                   : "bg-red-600 hover:bg-red-700 disabled:bg-red-400"
-              }`}
+                }`}
             >
               {submitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -286,17 +285,24 @@ const BloodStock = () => {
                         </span>
                       </td>
                       <td className="p-3">
-                        <span
-                          className={`font-bold ${
-                            isCritical
-                              ? "text-red-600"
-                              : isLowStock
-                                ? "text-amber-600"
-                                : "text-gray-800"
-                          }`}
-                        >
-                          {item.quantity} units
-                        </span>
+                        <div className="flex flex-col gap-1.5 min-w-[120px]">
+                          <span
+                            className={`font-bold ${isCritical
+                                ? "text-red-600"
+                                : isLowStock
+                                  ? "text-amber-600"
+                                  : "text-gray-800"
+                              }`}
+                          >
+                            {item.quantity} units
+                          </span>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`h-2.5 rounded-full ${isCritical ? 'bg-red-600' : isLowStock ? 'bg-amber-500' : 'bg-green-500'}`} 
+                              style={{ width: `${Math.min((item.quantity / 100) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
                       </td>
                       <td className="p-3">
                         {isCritical ? (
