@@ -204,7 +204,6 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
           const apiUrl = `${import.meta.env.VITE_API_URL || ""}/api/auth/profile`;
           const res = await fetch(apiUrl, {
-          const res = await fetch("/api/auth/profile", {
             headers: { Authorization: `Bearer ${token}` },
           });
 
@@ -309,9 +308,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-red-50 to-white">
       {/* HEADER */}
       <header
-        className={`flex justify-between items-center bg-white/95 backdrop-blur-md shadow-sm border-b border-red-100 px-4 sm:px-6 py-3 sticky top-0 z-50 transition-all duration-300 ${
-          isScrolled ? "shadow-lg" : "shadow-sm"
-        }`}
+        className={`flex justify-between items-center bg-white/95 backdrop-blur-md shadow-sm border-b border-red-100 px-4 sm:px-6 py-3 sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "shadow-lg" : "shadow-sm"
+          }`}
         style={{
           background: `linear-gradient(135deg, ${theme.primary[50]} 0%, white 50%, ${theme.primary[50]} 100%)`,
         }}
@@ -402,11 +400,9 @@ const DashboardLayout = ({ userRole = "donor" }) => {
       <div className="flex flex-1 relative">
         {/* SIDEBAR (omitted for brevity) */}
         <aside
-          className={`${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 ${
-            sidebarCollapsed ? "w-16" : "w-64"
-          } bg-white shadow-xl border-r border-red-100 transition-all duration-300 flex flex-col transform lg:transform-none`}
+          className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-40 ${sidebarCollapsed ? "w-16" : "w-64"
+            } bg-white shadow-xl border-r border-red-100 transition-all duration-300 flex flex-col transform lg:transform-none`}
           style={{
             background: `linear-gradient(to bottom, ${theme.primary[50]}, white)`,
           }}
@@ -460,15 +456,13 @@ const DashboardLayout = ({ userRole = "donor" }) => {
                       navigate(item.path);
                       setSidebarOpen(false);
                     }}
-                    className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-200 relative group ${
-                      isActive
-                        ? "shadow-md font-semibold transform scale-[1.02]"
-                        : "hover:shadow-md hover:transform hover:scale-[1.02] hover:bg-red-50"
-                    } ${
-                      isActive
+                    className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-200 relative group ${isActive
+                      ? "shadow-md font-semibold transform scale-[1.02]"
+                      : "hover:shadow-md hover:transform hover:scale-[1.02] hover:bg-red-50"
+                      } ${isActive
                         ? "text-white"
                         : "text-gray-700 hover:text-red-700"
-                    }`}
+                      }`}
                     style={{
                       background: isActive
                         ? `linear-gradient(135deg, ${theme.primary[500]}, ${theme.primary[600]})`
@@ -540,9 +534,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
 
         {/* MAIN CONTENT */}
         <main
-          className={`flex-1 transition-all duration-300 min-h-[calc(100vh-80px)] ${
-            sidebarCollapsed ? "lg:ml-0" : "lg:ml-0"
-          }`}
+          className={`flex-1 transition-all duration-300 min-h-[calc(100vh-80px)] ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-0"
+            }`}
         >
           <div className="h-full overflow-auto p-4 sm:p-6">
             {/* PASSING DATA TO OUTLET HERE */}
@@ -569,9 +562,8 @@ const DashboardLayout = ({ userRole = "donor" }) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 flex-1 mx-1 ${
-                  isActive ? "bg-red-50 text-red-600" : "text-gray-600"
-                }`}
+                className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 flex-1 mx-1 ${isActive ? "bg-red-50 text-red-600" : "text-gray-600"
+                  }`}
               >
                 <Icon size={20} />
                 <span className="text-xs mt-1">{item.label.split(" ")[0]}</span>
