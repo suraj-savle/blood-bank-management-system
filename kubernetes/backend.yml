@@ -1,0 +1,33 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blood-bank-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: blood-bank-backend
+  template:
+    metadata:
+      labels:
+        app: blood-bank-backend
+    spec:
+      containers:
+        - name: backend
+          image: blood-bank-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blood-bank-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: blood-bank-backend
+  ports:
+    - port: 5000
+      targetPort: 5000
